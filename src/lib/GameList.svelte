@@ -8,11 +8,13 @@
     ];
 
     function addItem() {
-        let id = Date.now();
-        // name is formatted date
-        let name = new Date(id).toLocaleString();
-        const newItem = { id: id, text: name };
-        items = [...items, newItem];
+        // let id = Date.now();
+        // // name is formatted date
+        // let name = new Date(id).toLocaleString();
+        // const newItem = { id: id, text: name };
+        // items = [...items, newItem];
+        console.log(window.location.hash);
+        window.location.hash = '/new';
     }
 
     function removeRound(id) {

@@ -2,25 +2,31 @@
     import GameList from "./lib/GameList.svelte";
     import {onMount} from "svelte";
     import Game from "./lib/Game.svelte";
+    import NewGame from "./lib/NewGame.svelte";
 
     function handlePlay(event) {
         const {id} = event.detail;
         window.location.href = `#/game/${id}`;
     }
 
-    let game;
+    let page;
 
     async function hashchange() {
         // the poor man's router!
         const path = window.location.hash.slice(1);
 
+        if (!path) {
+            window.location.href = '#/list';
+            return;
+        }
+
         if (path.startsWith('/game')) {
             const id = path.slice(6);
-            game = "<p>TODO</p>"
+            page = Game;
         } else if (path === '/list') {
-            game = null;
-        } else {
-            window.location.hash = '/list';
+            page = GameList;
+        } else if (path === '/new') {
+            page = NewGame;
         }
     }
 
@@ -30,11 +36,7 @@
 <svelte:window on:hashchange={hashchange}/>
 
 <main>
-    {#if game}
-        <Game />
-    {:else}
-        <GameList on:play={handlePlay}/>
-    {/if}
+    <svelte:component this={page} />
 </main>
 
 <style>
