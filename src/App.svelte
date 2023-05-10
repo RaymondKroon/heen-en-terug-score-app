@@ -1,26 +1,15 @@
 <script>
-  import gameList from './lib/GameList.svelte';
   import GameList from "./lib/GameList.svelte";
+
+  function handlePlay(event) {
+    const { id } = event.detail;
+    window.location.href = `#/game/${id}`;
+  }
 </script>
 
 <main>
-  <GameList />
+  <GameList on:play={handlePlay} />
 </main>
 
 <style>
-  .logo {
-    height: 6em;
-    padding: 1.5em;
-    will-change: filter;
-    transition: filter 300ms;
-  }
-  .logo:hover {
-    filter: drop-shadow(0 0 2em #646cffaa);
-  }
-  .logo.svelte:hover {
-    filter: drop-shadow(0 0 2em #ff3e00aa);
-  }
-  .read-the-docs {
-    color: #888;
-  }
 </style>

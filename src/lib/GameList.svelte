@@ -1,5 +1,8 @@
 <script>
-    import { onMount } from 'svelte';
+    import { createEventDispatcher } from 'svelte';
+
+    const dispatch = createEventDispatcher();
+
 
     let items = [
     ];
@@ -17,6 +20,9 @@
     }
 
     function playRound(id) {
+        dispatch('play', {
+            id: id,
+        });
 
     }
 </script>
