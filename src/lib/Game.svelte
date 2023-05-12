@@ -1,11 +1,16 @@
 <script>
-    let players = [
-        {id: 1, name: "Speler 1", score: 5},
-        {id: 2, name: "Speler 2", score: 5},
-        {id: 3, name: "Speler 3", score: 5},
-        {id: 4, name: "Speler 4", score: 5},
-        {id: 5, name: "Speler 5", score: 5},
-    ]
+    import { addGame, listPlayers, addRound, gameExists } from './store.js';
+    export let id;
+
+    let players = listPlayers(id);
+
+    // let players = [
+    //     {id: 1, name: "Speler 1", score: 5},
+    //     {id: 2, name: "Speler 2", score: 5},
+    //     {id: 3, name: "Speler 3", score: 5},
+    //     {id: 4, name: "Speler 4", score: 5},
+    //     {id: 5, name: "Speler 5", score: 5},
+    // ]
 
     let currentRound = 1
 

@@ -1,11 +1,12 @@
 <script>
     import { createEventDispatcher } from 'svelte';
+    import { deleteGame as _deleteGame, listGames } from './store.js';
+
+    export let id = -1; // not using, prevent error on browser back button
 
     const dispatch = createEventDispatcher();
 
-
-    let items = [
-    ];
+    let games = listGames();
 
     function addItem() {
         // let id = Date.now();
@@ -17,13 +18,15 @@
         window.location.hash = '/new';
     }
 
-    function removeRound(id) {
-        items = items.filter(item => item.id !== id);
+    function deleteGame(id) {
+        _deleteGame(id);
+        games = listGames();
     }
 
-    function playRound(id) {
-        dispatch('play', {
-            id: id,
+    function playGame(id) {
+        dispatch('message', {
+            type: 'play',
+            id: id
         });
 
     }
@@ -61,11 +64,11 @@
 <h1>Heen en terug</h1>
 
 <div class="list">
-    {#each items as item (item.id)}
+    {#each games as game (game.id)}
         <div class="list-item">
-            <span class="list-item-text">{item.text}</span>
-            <span class="play-icon" on:click={() => playRound(item.id)}>▶</span>
-            <span class="delete-icon" on:click={() => removeRound(item.id)}>❌</span>
+            <span class="list-item-text">{game.name}</span>
+            <span class="play-icon" on:click="{_ => playGame(game.id)}">▶</span>
+            <span class="delete-icon" on:click="{_ => deleteGame(game.id)}">❌</span>
         </div>
     {/each}
 </div>
