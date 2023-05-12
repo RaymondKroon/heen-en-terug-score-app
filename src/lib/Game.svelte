@@ -1,45 +1,39 @@
 <script>
-    import { addGame, listPlayers, addRound, gameExists } from './store.js';
+    import {currentRound as _currentRound, getGame, listPlayers} from './store.js';
     export let id;
 
     let players = listPlayers(id);
 
-    // let players = [
-    //     {id: 1, name: "Speler 1", score: 5},
-    //     {id: 2, name: "Speler 2", score: 5},
-    //     {id: 3, name: "Speler 3", score: 5},
-    //     {id: 4, name: "Speler 4", score: 5},
-    //     {id: 5, name: "Speler 5", score: 5},
-    // ]
+    let currentRound = _currentRound(id);
 
-    let currentRound = 1
+    let game = getGame(id).rounds;
 
-    let game = [
-        {
-            nCards: 10,
-            trump: '-',
-            bids: {1: 1, 2: 1, 3: 1, 4: 1, 5: 1},
-            tricks: {1: 3, 2: 3, 3: 1, 4: 1, 5: 2},
-            played: true
-        },
-        {nCards: 9, trump: '-', bids: null, tricks: null, playable: true},
-        {nCards: 8, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 7, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 6, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 5, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 4, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 3, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 2, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 1, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 2, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 3, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 4, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 5, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 6, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 7, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 8, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 9, trump: '-', bids: null, tricks: null, playable: false},
-        {nCards: 10, trump: '-', bids: null, tricks: null, playable: false}]
+    // let game = [
+    //     {
+    //         nCards: 10,
+    //         trump: '-',
+    //         bids: {0: 1, 1: 1, 2: 1, 3: 1, 4: 1},
+    //         tricks: {0: 3, 1: 3, 2: 1, 4: 1, 5: 2},
+    //         played: true
+    //     },
+    //     {nCards: 9, trump: '-', bids: null, tricks: null, playable: true},
+    //     {nCards: 8, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 7, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 6, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 5, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 4, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 3, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 2, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 1, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 2, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 3, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 4, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 5, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 6, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 7, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 8, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 9, trump: '-', bids: null, tricks: null, playable: false},
+    //     {nCards: 10, trump: '-', bids: null, tricks: null, playable: false}]
 </script>
 
 <style>
@@ -146,7 +140,7 @@
 
                 {#each players as player, i}
                     <td class="{i%2 === 0 ? 'even' : 'odd'}">
-                        {#if round.bids !== null}
+                        {#if round.bids && round.bids.length}
                             {#if round.tricks === null}
                                 {round.bids[player.id]}
                             {:else}
@@ -166,9 +160,9 @@
                     </td>
                 {/each}
                 <td>
-                    {#if round.playable}
+                    {#if i == currentRound}
                         <div class="goto-icon">▶</div>
-                    {:else if round.played}
+                    {:else if i < currentRound}
                         <div class="goto-icon">✎</div>
                     {/if}
                 </td>

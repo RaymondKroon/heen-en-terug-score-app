@@ -27,12 +27,20 @@
             if (players[i] === '') {
                 continue;
             }
-            addPlayer(id, {id: i, name: players[i]});
+            addPlayer(id, players[i]);
         }
 
-        //TODO add round
+        let cardsPerRound = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        cardsPerRound.forEach((cards, _) => {
+            addRound(id, cards, random_trump());
+        });
 
         window.location.hash = '#/game/' + id;
+    }
+
+    function random_trump() {
+        let trumps = ['H', 'R', 'S', 'K', '-'];
+        return trumps[Math.floor(Math.random() * trumps.length)];
     }
 </script>
 

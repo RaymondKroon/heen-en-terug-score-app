@@ -2,11 +2,18 @@ import { get, writable } from 'svelte/store';
 
 const localStorageKey = 'heen-en-weer-store';
 
-// Initial game state
-const initialGame = {
-    players: [],
-    rounds: [],
-};
+const initialPlayer = {
+    id: 0,
+    name: 'empty',
+    score: 0
+}
+
+const initialRound = {
+    nCards: 0,
+    trump: '',
+    bids: [],
+    tricks: [],
+}
 
 // Initial store state
 const initialStore = {
@@ -60,11 +67,20 @@ export function gameExists(gameId) {
     return store.games.some(game => game.id === gameId);
 }
 
+export function getGame(gameId) {
+    const store = get(gameStore);
+    return store.games.find(game => game.id === gameId);
+}
+
 // Add a player to a specific game
-export function addPlayer(gameId, player) {
+export function addPlayer(gameId, name) {
     gameStore.update(store => {
         const gameIndex = store.games.findIndex(game => game.id === gameId);
         if (gameIndex !== -1) {
+            const playerCount = store.games[gameIndex].players.length;
+            let player = Object.assign({}, initialPlayer);
+            player.id = playerCount;
+            player.name = name;
             store.games[gameIndex].players = [...store.games[gameIndex].players, player];
         }
         return store;
@@ -82,16 +98,21 @@ export function listPlayers(gameId) {
 }
 
 // Add a round to a specific game
-export function addRound(gameIndex, round) {
+export function addRound(id, nCards, trump) {
     gameStore.update(store => {
+        let gameIndex = store.games.findIndex(game => game.id === id);
+        let round = Object.assign({}, initialRound);
+        round.nCards = nCards;
+        round.trump = trump;
         store.games[gameIndex].rounds = [...store.games[gameIndex].rounds, round];
         return store;
     });
 }
 
 // Update player's prediction for a round in a specific game
-export function updatePlayerPrediction(gameIndex, playerId, roundId, prediction) {
+export function updatePlayerPrediction(id, playerId, roundId, prediction) {
     gameStore.update(store => {
+        let gameIndex = store.games.findIndex(game => game.id === id);
         const game = store.games[gameIndex];
         const playerIndex = game.players.findIndex(player => player.id === playerId);
         if (playerIndex !== -1) {
@@ -102,8 +123,9 @@ export function updatePlayerPrediction(gameIndex, playerId, roundId, prediction)
 }
 
 // Calculate scores for a specific game and update the store state
-export function calculateScores(gameIndex) {
+export function calculateScores(id) {
     gameStore.update(store => {
+        let gameIndex = store.games.findIndex(game => game.id === id);
         const game = store.games[gameIndex];
         game.players.forEach(player => {
             let score = 0;
@@ -122,6 +144,12 @@ export function calculateScores(gameIndex) {
         });
         return store;
     });
+}
+
+export function currentRound(id) {
+    let rounds = getGame(id).rounds;
+    // return index of round with no tricks
+    return rounds.findIndex(round => round.tricks.length === 0);
 }
 
 // Reset the store state
