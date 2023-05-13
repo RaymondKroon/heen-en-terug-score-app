@@ -3,6 +3,9 @@
     import {onMount} from "svelte";
     import Game from "./lib/Game.svelte";
     import NewGame from "./lib/NewGame.svelte";
+    import BidRound from "./lib/BidRound.svelte";
+    import PlayRound from "./lib/PlayRound.svelte";
+    import ScoreRound from "./lib/ScoreRound.svelte";
 
     function handleMessage(event) {
         if (event.detail.type === 'play') {
@@ -24,7 +27,6 @@
         }
 
         if (path.startsWith('/game')) {
-            // parse as int
             let id =  path.slice(6);
             id = parseInt(id, 10);
             page = Game;
@@ -33,6 +35,26 @@
             page = GameList;
         } else if (path === '/new') {
             page = NewGame;
+        } else if (path.startsWith('/bid')) {
+            let id_round = path.slice(5);
+            let id = parseInt(id_round.split('/')[0]);
+            let round = parseInt(id_round.split('/')[1]);
+            page = BidRound;
+            props = {id, round};
+        } else if (path.startsWith('/play')) {
+            let id_round = path.slice(6);
+            let id = parseInt(id_round.split('/')[0]);
+            let round = parseInt(id_round.split('/')[1]);
+            page = PlayRound;
+            props = {id, round};
+        } else if (path.startsWith("/score")) {
+            let id_round = path.slice(7);
+            let id = parseInt(id_round.split('/')[0]);
+            let round = parseInt(id_round.split('/')[1]);
+            page = ScoreRound;
+            props = {id, round};
+        } else {
+            window.location.href = '#/list';
         }
     }
 

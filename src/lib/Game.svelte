@@ -1,39 +1,25 @@
 <script>
-    import {currentRound as _currentRound, getGame, listPlayers} from './store.js';
+    import {currentRoundId as _currentRoundId, getGame, listPlayers} from './store.js';
     export let id;
 
     let players = listPlayers(id);
-
-    let currentRound = _currentRound(id);
+    let currentRoundId = _currentRoundId(id);
+    let currentRound = getGame(id).rounds[currentRoundId];
 
     let game = getGame(id).rounds;
 
-    // let game = [
-    //     {
-    //         nCards: 10,
-    //         trump: '-',
-    //         bids: {0: 1, 1: 1, 2: 1, 3: 1, 4: 1},
-    //         tricks: {0: 3, 1: 3, 2: 1, 4: 1, 5: 2},
-    //         played: true
-    //     },
-    //     {nCards: 9, trump: '-', bids: null, tricks: null, playable: true},
-    //     {nCards: 8, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 7, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 6, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 5, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 4, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 3, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 2, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 1, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 2, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 3, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 4, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 5, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 6, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 7, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 8, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 9, trump: '-', bids: null, tricks: null, playable: false},
-    //     {nCards: 10, trump: '-', bids: null, tricks: null, playable: false}]
+    function playRound(i) {
+        if (currentRound.bids && currentRound.bids.length > 0) {
+            window.location.hash = `/play/${id}/${i}`;
+        } else {
+            window.location.hash = `/bid/${id}/${i}`;
+        }
+    }
+
+    function editRound(i) {
+        //TODO
+    }
+
 </script>
 
 <style>
@@ -98,6 +84,7 @@
     }
 
     .goto-icon {
+        cursor: pointer;
         color: gray;
     }
 
@@ -105,7 +92,7 @@
 
 
 <div class="game">
-    <h1>Stand</h1>
+    <h1>Stand <a href="/">↑</a></h1>
     <div class="leaderboard">
         {#each players as player}
             <div class="player">
@@ -141,7 +128,7 @@
                 {#each players as player, i}
                     <td class="{i%2 === 0 ? 'even' : 'odd'}">
                         {#if round.bids && round.bids.length}
-                            {#if round.tricks === null}
+                            {#if !round.tricks || !round.tricks.length}
                                 {round.bids[player.id]}
                             {:else}
                                 {#if round.bids[player.id] === round.tricks[player.id]}
@@ -160,10 +147,10 @@
                     </td>
                 {/each}
                 <td>
-                    {#if i == currentRound}
-                        <div class="goto-icon">▶</div>
-                    {:else if i < currentRound}
-                        <div class="goto-icon">✎</div>
+                    {#if i == currentRoundId}
+                        <div class="goto-icon" on:click={_ => playRound(i)}>▶</div>
+                    {:else if i < currentRoundId}
+                        <div class="goto-icon" on:click={_ => editRound(i)}>✎</div>
                     {/if}
                 </td>
             </tr>

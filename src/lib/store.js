@@ -109,15 +109,11 @@ export function addRound(id, nCards, trump) {
     });
 }
 
-// Update player's prediction for a round in a specific game
-export function updatePlayerPrediction(id, playerId, roundId, prediction) {
+export function updatePlayerBid(gameId, roundId, playerId, bid) {
     gameStore.update(store => {
-        let gameIndex = store.games.findIndex(game => game.id === id);
-        const game = store.games[gameIndex];
-        const playerIndex = game.players.findIndex(player => player.id === playerId);
-        if (playerIndex !== -1) {
-            game.players[playerIndex].predictions[roundId] = prediction;
-        }
+        let game = _getGameFromId(store, gameId);
+        let bids = game.rounds[roundId].bids;
+        bids[playerId] = bid;
         return store;
     });
 }
@@ -125,8 +121,7 @@ export function updatePlayerPrediction(id, playerId, roundId, prediction) {
 // Calculate scores for a specific game and update the store state
 export function calculateScores(id) {
     gameStore.update(store => {
-        let gameIndex = store.games.findIndex(game => game.id === id);
-        const game = store.games[gameIndex];
+        let game = _getGameFromId(store, id);
         game.players.forEach(player => {
             let score = 0;
             game.rounds.forEach(round => {
@@ -146,7 +141,11 @@ export function calculateScores(id) {
     });
 }
 
-export function currentRound(id) {
+function _getGameFromId(store, id) {
+    return store.games.find(game => game.id === id);
+}
+
+export function currentRoundId(id) {
     let rounds = getGame(id).rounds;
     // return index of round with no tricks
     return rounds.findIndex(round => round.tricks.length === 0);
