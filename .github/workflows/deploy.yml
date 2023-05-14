@@ -49,10 +49,6 @@ jobs:
         with:
           node-version: "16"
           cache: ${{ steps.detect-package-manager.outputs.manager }}
-      - name: Setup Pages
-        uses: actions/configure-pages@v3
-        with:
-          static_site_generator: sveltekit
       - name: Restore cache
         uses: actions/cache@v3
         with:
