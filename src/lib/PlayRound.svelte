@@ -15,31 +15,6 @@
 </script>
 
 <style>
-    .trump {
-        display: flex;
-        flex-direction: row;
-        justify-content: center;
-        align-items: center;
-        font-size: 150px;
-        height: 140px;
-    }
-
-    .trump > :global(.heart) {
-        color: red;
-    }
-
-    .trump > :global(.spade) {
-        color: black;
-    }
-
-    .trump > :global(.club) {
-        color: green;
-    }
-
-    .trump > :global(.diamond) {
-        color: blue;
-    }
-
     .player {
         display: flex;
         flex-direction: row;
