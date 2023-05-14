@@ -24,7 +24,7 @@ const initialStore = {
 const gameStore = writable(initialStore);
 
 const storedStore = localStorage.getItem(localStorageKey);
-if (storedStore !== undefined) {
+if (storedStore) {
     try {
         gameStore.set(JSON.parse(storedStore));
     } catch (e) {
