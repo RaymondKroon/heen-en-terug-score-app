@@ -1,5 +1,5 @@
 <script>
-    import {getGame} from './store.js';
+    import {getGame, updatePlayerBid, updatePlayerTricks} from './store.js';
     import Trump from "./Trump.svelte";
 
     export let id;
@@ -11,6 +11,13 @@
 
     const maxTricks = _round.nCards;
     const tricks = Array(players.length).fill(0);
+
+    function save() {
+        for (let i = 0; i < players.length; i++) {
+            updatePlayerTricks(id, round, i, tricks[i])
+        }
+        location.href = `#/game/${id}`;
+    }
 </script>
 <style>
     .player-input {
@@ -46,7 +53,7 @@
 {#if tricks.reduce((a, b) => a + b, 0) != maxTricks}
     <div class="error">Totaal aantal slagen moet {maxTricks} zijn</div>
 {:else}
-    <button on:click="{() => console.log(tricks)}">Opslaan</button>
+    <button on:click="{save}">Opslaan</button>
 {/if}
 
 

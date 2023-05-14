@@ -13,7 +13,6 @@
 
     function save() {
         for (let i = 0; i < players.length; i++) {
-            console.log(i, bids[i]);
             updatePlayerBid(id, round, i, bids[i])
         }
         location.href = `#/play/${id}/${round}`;

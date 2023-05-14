@@ -118,6 +118,15 @@ export function updatePlayerBid(gameId, roundId, playerId, bid) {
     });
 }
 
+export function updatePlayerTricks(gameId, roundId, playerId, tricks) {
+    gameStore.update(store => {
+        let game = _getGameFromId(store, gameId);
+        let tricksArray = game.rounds[roundId].tricks;
+        tricksArray[playerId] = tricks;
+        return store;
+    });
+}
+
 // Calculate scores for a specific game and update the store state
 export function calculateScores(id) {
     gameStore.update(store => {
@@ -125,10 +134,10 @@ export function calculateScores(id) {
         game.players.forEach(player => {
             let score = 0;
             game.rounds.forEach(round => {
-                const prediction = player.predictions[round.id];
-                const tricks = round.tricks;
-                if (prediction !== undefined) {
-                    if (prediction === tricks) {
+                const bid = round.bids[player.id];
+                const tricks = round.tricks[player.id];
+                if (bid && tricks) {
+                    if (bid === tricks) {
                         score += tricks + 5; // Correct prediction with bonus
                     } else {
                         score += tricks; // Incorrect prediction

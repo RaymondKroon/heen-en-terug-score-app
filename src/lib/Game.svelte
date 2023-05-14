@@ -1,5 +1,5 @@
 <script>
-    import {currentRoundId as _currentRoundId, getGame, listPlayers} from './store.js';
+    import {calculateScores, currentRoundId as _currentRoundId, getGame, listPlayers} from './store.js';
     export let id;
 
     const trump_render = {
@@ -9,6 +9,8 @@
         'club': 'K',
         'none': '-'
     }
+
+    calculateScores(id);
 
     let players = listPlayers(id);
     let currentRoundId = _currentRoundId(id);
@@ -149,8 +151,8 @@
                         {/if}
                     </td>
                     <td>
-                        {#if round.played}
-                            5
+                        {#if round.tricks && round.tricks.length}
+                            {round.tricks[player.id]}
                         {/if}
                     </td>
                 {/each}
