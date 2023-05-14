@@ -48,6 +48,8 @@
     {/each}
 </div>
 
+<button on:click="{gotoResult}">Resultaat</button>
+
 <h2>Stand</h2>
 <div class="leaderboard">
     {#each players as player}
@@ -62,4 +64,3 @@
     {/each}
 </div>
 
-<button on:click="{gotoResult}">Resultaat</button>
