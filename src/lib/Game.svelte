@@ -2,6 +2,14 @@
     import {currentRoundId as _currentRoundId, getGame, listPlayers} from './store.js';
     export let id;
 
+    const trump_render = {
+        'heart': 'H',
+        'spade': 'S',
+        'diamond': 'R',
+        'club': 'K',
+        'none': '-'
+    }
+
     let players = listPlayers(id);
     let currentRoundId = _currentRoundId(id);
     let currentRound = getGame(id).rounds[currentRoundId];
@@ -106,7 +114,7 @@
         {/each}
     </div>
 
-    <h1>Rondes</h1>
+    <h2>Rondes</h2>
     <table class="rounds">
         <thead>
         <tr>
@@ -123,7 +131,7 @@
         {#each game as round, i}
             <tr class="row round {i === currentRound ? 'active' : ''}">
                 <td class="ncards">{round.nCards}</td>
-                <td class="trump">{round.trump}</td>
+                <td class="trump">{trump_render[round.trump]}</td>
 
                 {#each players as player, i}
                     <td class="{i%2 === 0 ? 'even' : 'odd'}">

@@ -39,7 +39,7 @@
     }
 
     function random_trump() {
-        let trumps = ['H', 'R', 'S', 'K', '-'];
+        let trumps = ['heart', 'diamond', 'spade', 'club', 'none'];
         return trumps[Math.floor(Math.random() * trumps.length)];
     }
 </script>

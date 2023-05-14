@@ -1,1 +1,90 @@
-//TODO, TROEF, AANTAL KAARTEN, STAND
+<script>
+    import {getGame} from './store.js';
+    import Trump from "./Trump.svelte";
+
+    export let id;
+    export let round;
+    const game = getGame(id);
+    const _round = game.rounds[round];
+
+    const players = game.players;
+
+    function gotoResult() {
+        location.href = `#/result/${id}/${round}`;
+    }
+</script>
+
+<style>
+    .trump {
+        display: flex;
+        flex-direction: row;
+        justify-content: center;
+        align-items: center;
+        font-size: 150px;
+        height: 140px;
+    }
+
+    .trump > :global(.heart) {
+        color: red;
+    }
+
+    .trump > :global(.spade) {
+        color: black;
+    }
+
+    .trump > :global(.club) {
+        color: green;
+    }
+
+    .trump > :global(.diamond) {
+        color: blue;
+    }
+
+    .player {
+        display: flex;
+        flex-direction: row;
+        font-family: sans-serif;
+        background-color: #eee;
+        border-radius: 10px;
+        padding: 10px;
+        margin-bottom: 10px;
+        width: 200px;
+    }
+
+    .player-name {
+        flex-grow: 1;
+    }
+</style>
+
+<h1>Ronde {round + 1} ({_round.nCards})</h1>
+<Trump suit="{_round.trump}" />
+
+<h2>Geboden</h2>
+<div class="leaderboard">
+    {#each players as player}
+        <div class="player">
+            <div class="player-name">
+                {player.name}
+            </div>
+            <div class="player-score">
+                {_round.bids[player.id]}
+            </div>
+        </div>
+    {/each}
+</div>
+
+<h2>Stand</h2>
+<div class="leaderboard">
+    {#each players as player}
+        <div class="player">
+            <div class="player-name">
+                {player.name}
+            </div>
+            <div class="player-score">
+                {player.score}
+            </div>
+        </div>
+    {/each}
+</div>
+
+<button on:click="{gotoResult}">Resultaat</button>

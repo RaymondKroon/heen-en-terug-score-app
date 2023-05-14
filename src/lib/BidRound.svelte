@@ -1,5 +1,6 @@
 <script>
     import {getGame, updatePlayerBid} from './store.js';
+    import Trump from "./Trump.svelte";
     export let id;
     export let round;
     const game = getGame(id);
@@ -33,8 +34,10 @@
     }
 </style>
 
-<h1>Ronde {round + 1} ({_round.nCards})</h1>
+<h1>Bieden ronde {round + 1} ({_round.nCards})</h1>
+<Trump suit={_round.trump} />
 
+<h2>Spelers</h2>
 {#each players as player, i}
     <div class="player-input">
         <div class="name">{player.name}</div>
@@ -43,4 +46,6 @@
         <input type="range" min="0" max={maxBid} step="1" bind:value="{bids[i]}" />
     </div>
 {/each}
+
+
 <button on:click="{save}">Speel!</button>

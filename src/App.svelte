@@ -5,7 +5,7 @@
     import NewGame from "./lib/NewGame.svelte";
     import BidRound from "./lib/BidRound.svelte";
     import PlayRound from "./lib/PlayRound.svelte";
-    import ScoreRound from "./lib/ScoreRound.svelte";
+    import ScoreRound from "./lib/ResultRound.svelte";
 
     function handleMessage(event) {
         if (event.detail.type === 'play') {
@@ -47,8 +47,8 @@
             let round = parseInt(id_round.split('/')[1]);
             page = PlayRound;
             props = {id, round};
-        } else if (path.startsWith("/score")) {
-            let id_round = path.slice(7);
+        } else if (path.startsWith('/result')) {
+            let id_round = path.slice(8);
             let id = parseInt(id_round.split('/')[0]);
             let round = parseInt(id_round.split('/')[1]);
             page = ScoreRound;

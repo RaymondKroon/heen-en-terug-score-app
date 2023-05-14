@@ -3,6 +3,7 @@
     import { deleteGame as _deleteGame, listGames } from './store.js';
 
     export let id = -1; // not using, prevent error on browser back button
+    export let round = -1; // not using, prevent error on browser back button
 
     const dispatch = createEventDispatcher();
 
