@@ -6,6 +6,7 @@
     import BidRound from "./lib/BidRound.svelte";
     import PlayRound from "./lib/PlayRound.svelte";
     import ScoreRound from "./lib/ResultRound.svelte";
+    import EditRound from "./lib/EditRound.svelte";
 
     function handleMessage(event) {
         if (event.detail.type === 'play') {
@@ -52,6 +53,12 @@
             let id = parseInt(id_round.split('/')[0]);
             let round = parseInt(id_round.split('/')[1]);
             page = ScoreRound;
+            props = {id, round};
+        } else if (path.startsWith('/edit')) {
+            let id_round = path.slice(6);
+            let id = parseInt(id_round.split('/')[0]);
+            let round = parseInt(id_round.split('/')[1]);
+            page = EditRound;
             props = {id, round};
         } else {
             window.location.href = '#/list';

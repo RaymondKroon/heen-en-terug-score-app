@@ -69,7 +69,9 @@ export function gameExists(gameId) {
 
 export function getGame(gameId) {
     const store = get(gameStore);
-    return store.games.find(game => game.id === gameId);
+    const game = _getGameFromId(store, gameId)
+    //clone the game object to prevent mutation
+    return JSON.parse(JSON.stringify(game));
 }
 
 // Add a player to a specific game
@@ -109,20 +111,18 @@ export function addRound(id, nCards, trump) {
     });
 }
 
-export function updatePlayerBid(gameId, roundId, playerId, bid) {
+export function updatePlayerBids(gameId, roundId, bids) {
     gameStore.update(store => {
         let game = _getGameFromId(store, gameId);
-        let bids = game.rounds[roundId].bids;
-        bids[playerId] = bid;
+        game.rounds[roundId].bids = bids;
         return store;
     });
 }
 
-export function updatePlayerTricks(gameId, roundId, playerId, tricks) {
+export function updatePlayerTricks(gameId, roundId, tricks) {
     gameStore.update(store => {
         let game = _getGameFromId(store, gameId);
-        let tricksArray = game.rounds[roundId].tricks;
-        tricksArray[playerId] = tricks;
+        let tricksArray = game.rounds[roundId].tricks = tricks;
         return store;
     });
 }
@@ -136,11 +136,11 @@ export function calculateScores(id) {
             game.rounds.forEach(round => {
                 const bid = round.bids[player.id];
                 const tricks = round.tricks[player.id];
-                if (bid && tricks) {
+                if ((bid || bid === 0) && (tricks || tricks === 0)) {
                     if (bid === tricks) {
-                        score += tricks + 5; // Correct prediction with bonus
+                        score += tricks + 5;
                     } else {
-                        score += tricks; // Incorrect prediction
+                        score += tricks;
                     }
                 }
             });

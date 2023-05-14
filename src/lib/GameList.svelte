@@ -61,7 +61,7 @@
 <div class="list">
     {#each games as game (game.id)}
         <div class="list-item">
-            <span class="list-item-text">{game.name}</span>
+            <span class="list-item-text" on:click="{_ => playGame(game.id)}">{game.name}</span>
             <span class="play-icon" on:click="{_ => playGame(game.id)}">▶</span>
             <span class="delete-icon" on:click="{_ => deleteGame(game.id)}">❌</span>
         </div>

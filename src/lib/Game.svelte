@@ -10,7 +10,7 @@
         'none': '-'
     }
 
-    calculateScores(id);
+    // calculateScores(id);
 
     let players = listPlayers(id);
     let currentRoundId = _currentRoundId(id);
@@ -27,7 +27,7 @@
     }
 
     function editRound(i) {
-        //TODO
+        location.href = `#/edit/${id}/${i}`;
     }
 
 </script>
@@ -150,7 +150,7 @@
                             {/if}
                         {/if}
                     </td>
-                    <td>
+                    <td class="{i%2 === 0 ? 'even' : 'odd'}">
                         {#if round.tricks && round.tricks.length}
                             {round.tricks[player.id]}
                         {/if}

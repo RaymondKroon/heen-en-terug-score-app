@@ -1,6 +1,5 @@
 <script>
-    import {getGame, updatePlayerBid, updatePlayerTricks} from './store.js';
-    import Trump from "./Trump.svelte";
+    import {calculateScores, getGame, updatePlayerTricks} from './store.js';
 
     export let id;
     export let round;
@@ -13,9 +12,8 @@
     const tricks = Array(players.length).fill(0);
 
     function save() {
-        for (let i = 0; i < players.length; i++) {
-            updatePlayerTricks(id, round, i, tricks[i])
-        }
+        updatePlayerTricks(id, round, tricks)
+        calculateScores(id);
         location.href = `#/game/${id}`;
     }
 </script>
@@ -55,6 +53,3 @@
 {:else}
     <button on:click="{save}">Opslaan</button>
 {/if}
-
-
-<p>Geboden laten, behaalde invoeren, controle op totaal</p>
