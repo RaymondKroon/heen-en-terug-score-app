@@ -103,7 +103,7 @@
 
 
 <div class="game">
-    <h1>Stand <a href="/">↑</a></h1>
+    <h1>Stand <a href="#/list">↑</a></h1>
     <div class="leaderboard">
         {#each players as player}
             <div class="player">
