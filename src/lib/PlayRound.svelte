@@ -19,7 +19,7 @@
         display: flex;
         flex-direction: row;
         font-family: sans-serif;
-        background-color: #eee;
+        background-color: var(--accent-color);
         border-radius: 10px;
         padding: 10px;
         margin-bottom: 10px;

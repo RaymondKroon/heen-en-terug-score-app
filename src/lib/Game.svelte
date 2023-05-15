@@ -41,10 +41,11 @@
     }
 
     .player {
+        color-scheme: inherit;
         display: flex;
         flex-direction: row;
         font-family: sans-serif;
-        background-color: #eee;
+        background-color: var(--accent-color);
         border-radius: 10px;
         padding: 10px;
         margin-bottom: 10px;
@@ -78,11 +79,11 @@
 
     td.trump {
         padding-right: 5px;
-        border-right: #1a1a1a solid 1px;
+        border-right: var(--border-color) solid 1px;
     }
 
     td.odd {
-        background-color: #eee;
+        background-color: var(--accent-color);
     }
 
     .check-icon {
@@ -131,7 +132,7 @@
         </thead>
         <tbody class="content">
         {#each game as round, i}
-            <tr class="row round {i === currentRound ? 'active' : ''}">
+            <tr class="row round {i === currentRoundId ? 'active' : ''}">
                 <td class="ncards">{round.nCards}</td>
                 <td class="trump">{trump_render[round.trump]}</td>
 

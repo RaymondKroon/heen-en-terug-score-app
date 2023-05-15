@@ -14,6 +14,10 @@
     }
 
     function deleteGame(id) {
+        //double check with alert
+        if (!confirm('Weet je zeker dat je dit spel wilt verwijderen?')) {
+            return;
+        }
         _deleteGame(id);
         games = listGames();
     }
@@ -41,6 +45,7 @@
 
     .list-item-text {
         flex-grow: 1;
+        cursor: pointer;
     }
 
     .delete-icon {
