@@ -74,6 +74,11 @@
         background-color: var(--accent-color);
     }
 
+    td.score {
+        margin-left: 4px;
+        font-weight: 500;
+    }
+
     .check-icon {
         color: green;
     }
@@ -148,9 +153,9 @@
                             {/if}
                         {/if}
                     </td>
-                    <td class="{i%2 === 0 ? 'even' : 'odd'}">
+                    <td class="score {i%2 === 0 ? 'even' : 'odd'}">
                         {#if round.tricks && round.tricks.length}
-                            {round.tricks[player.id]}
+                            {round.totalScore[player.id]}
                         {/if}
                     </td>
                 {/each}

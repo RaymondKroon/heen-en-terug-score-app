@@ -134,6 +134,9 @@ export function calculateScores(id) {
         game.players.forEach(player => {
             let score = 0;
             game.rounds.forEach(round => {
+                if (!round.totalScore) {
+                    round.totalScore = Array(game.players.length).fill(0);
+                }
                 const bid = round.bids[player.id];
                 const tricks = round.tricks[player.id];
                 if ((bid || bid === 0) && (tricks || tricks === 0)) {
@@ -142,6 +145,7 @@ export function calculateScores(id) {
                     } else {
                         score += tricks;
                     }
+                    round.totalScore[player.id] = score;
                 }
             });
             player.score = score;
