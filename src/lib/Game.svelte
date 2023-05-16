@@ -1,5 +1,7 @@
 <script>
     import {calculateScores, currentRoundId as _currentRoundId, getGame, listPlayers} from './store.js';
+    import Leaderboard from "./Leaderboard.svelte";
+    import {LeaderboardEntry} from "./lib.js";
     export let id;
 
     const trump_render = {
@@ -38,22 +40,6 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
-    }
-
-    .player {
-        color-scheme: inherit;
-        display: flex;
-        flex-direction: row;
-        font-family: sans-serif;
-        background-color: var(--accent-color);
-        border-radius: 10px;
-        padding: 10px;
-        margin-bottom: 10px;
-        width: 200px;
-    }
-
-    .player-name {
-        flex-grow: 1;
     }
 
     .header-item {
@@ -104,18 +90,7 @@
 
 <div class="game">
     <h1>Stand <a href="#/list">↑</a></h1>
-    <div class="leaderboard">
-        {#each players as player}
-            <div class="player">
-                <div class="player-name">
-                    {player.name}
-                </div>
-                <div class="player-score">
-                    {player.score}
-                </div>
-            </div>
-        {/each}
-    </div>
+    <Leaderboard entries={players.map(p => new LeaderboardEntry(p.name, p.score))} />
 
     <h2>Rondes</h2>
     <table class="rounds">
