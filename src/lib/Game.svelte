@@ -1,5 +1,5 @@
 <script>
-    import {calculateScores, currentRoundId as _currentRoundId, getGame, listPlayers} from './store.js';
+    import {calculateScores, currentRoundId as _currentRoundId, getGame, getStandings, listPlayers} from './store.js';
     import Leaderboard from "./Leaderboard.svelte";
     import {LeaderboardEntry} from "./lib.js";
     export let id;
@@ -90,7 +90,7 @@
 
 <div class="game">
     <h1>Stand <a href="#/list">↑</a></h1>
-    <Leaderboard entries={players.map(p => new LeaderboardEntry(p.name, p.score))} />
+    <Leaderboard entries={getStandings(id)} />
 
     <h2>Rondes</h2>
     <table class="rounds">

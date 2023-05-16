@@ -150,6 +150,18 @@ export function calculateScores(id) {
     });
 }
 
+export function getStandings(gameId) {
+    let game = getGame(gameId);
+    let standings = game.players.map(player => {
+        return {
+            name: player.name,
+            score: player.score
+        }
+    });
+    standings.sort((a, b) => b.score - a.score);
+    return standings;
+}
+
 function _getGameFromId(store, id) {
     return store.games.find(game => game.id === id);
 }

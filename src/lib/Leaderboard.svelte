@@ -4,15 +4,21 @@
 </script>
 
 <style>
+    .leaderboard {
+        margin-bottom: 10px;
+        border-radius: 10px;
+        background-color: var(--accent-color);
+    }
+
     .entry {
         color-scheme: inherit;
         display: flex;
         flex-direction: row;
         font-family: sans-serif;
-        background-color: var(--accent-color);
-        border-radius: 10px;
+
+        /*border-radius: 10px;*/
         padding: 10px;
-        margin-bottom: 10px;
+        /*margin-bottom: 10px;*/
         width: 200px;
     }
 

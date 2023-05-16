@@ -1,5 +1,5 @@
 <script>
-    import {getGame} from './store.js';
+    import {getGame, getStandings} from './store.js';
     import Trump from "./Trump.svelte";
     import {LeaderboardEntry} from "./lib.js";
     import Leaderboard from "./Leaderboard.svelte";
@@ -28,5 +28,5 @@
 <button on:click="{gotoResult}">Resultaat</button>
 
 <h2>Stand</h2>
-<Leaderboard entries={players.map(p => new LeaderboardEntry(p.name, p.score))} />
+<Leaderboard entries={getStandings(id)} />
 
