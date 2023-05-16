@@ -20,7 +20,7 @@
 </style>
 
 <h1>Ronde {round + 1} ({_round.nCards})<a href={`#/game/${id}`}>↑</a></h1>
-<Trump suit="{_round.trump}" />
+<Trump size=10 suit="{_round.trump}" />
 
 <h2>Geboden <a href={`#/edit/${id}/${round}`}>✎</a></h2>
 <Leaderboard entries={players.map(p => new LeaderboardEntry(p.name, _round.bids[p.id]))} />

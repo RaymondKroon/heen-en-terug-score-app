@@ -2,6 +2,8 @@
     import {calculateScores, currentRoundId as _currentRoundId, getGame, getStandings, listPlayers} from './store.js';
     import Leaderboard from "./Leaderboard.svelte";
     import {LeaderboardEntry} from "./lib.js";
+    import Trump from "./Trump.svelte";
+
     export let id;
 
     const trump_render = {
@@ -85,12 +87,32 @@
         color: gray;
     }
 
+    .next-round {
+        display: flex;
+        flex-direction: row;
+        align-items: center;
+    }
+
+    .next-round > .cards {
+        font-size: 3em;
+        margin-right: 15px;
+    }
+
+
 </style>
 
 
 <div class="game">
     <h1>Stand <a href="#/list">↑</a></h1>
-    <Leaderboard entries={getStandings(id)} />
+    <Leaderboard entries={getStandings(id)}/>
+
+    {#if currentRound}
+        <h2>Volgende ronde</h2>
+        <div class="next-round" on:click={_ => playRound(currentRoundId)}>
+            <div class="cards">{currentRound.nCards}</div>
+            <Trump size=4 suit={currentRound.trump}/>
+        </div>
+    {/if}
 
     <h2>Rondes</h2>
     <table class="rounds">

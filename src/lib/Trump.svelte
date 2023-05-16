@@ -1,5 +1,8 @@
 <script>
     export let suit;
+    export let size="1";
+    let fontSize = size + "em";
+    let height = size * 14 + "px";
 </script>
 
 <style>
@@ -8,8 +11,8 @@
         flex-direction: row;
         justify-content: center;
         align-items: center;
-        font-size: 10em;
-        height: 140px;
+        /*font-size: 1em;*/
+        /*height: 14px;*/
     }
 
     .heart {
@@ -30,20 +33,19 @@
 
     .none {
         color: grey;
-        font-size: 0.1em;
     }
 </style>
 
-<div class="trump">
+<div class="trump" style="font-size: {fontSize}; height: {height}">
     {#if suit === 'heart'}
-        <div class="heart">♥️</div>
+        <div class="heart" >♥️</div>
     {:else if suit === 'spade'}
         <div class="spade">♠️</div>
     {:else if suit === 'club'}
         <div class="club">♣️</div>
     {:else if suit === 'diamond'}
-        <div class="diamond">♦️</div>
+        <div class="diamond" >♦️</div>
     {:else}
-        <div class="none">geen troef</div>
+        <div class="none" style="font-size: {size*3}px">geen troef</div>
     {/if}
 </div>
