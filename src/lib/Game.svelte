@@ -155,7 +155,9 @@
                     </td>
                     <td class="score {i%2 === 0 ? 'even' : 'odd'}">
                         {#if round.tricks && round.tricks.length}
+                            {#if round.totalScore}
                             {round.totalScore[player.id]}
+                            {/if}
                         {/if}
                     </td>
                 {/each}
