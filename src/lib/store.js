@@ -156,8 +156,8 @@ function _getGameFromId(store, id) {
 
 export function currentRoundId(id) {
     let rounds = getGame(id).rounds;
-    // return index of round with no tricks
-    return rounds.findIndex(round => round.tricks.length === 0);
+    let result = rounds.findIndex(round => round.tricks.length === 0)
+    return result >= 0 ? result : rounds.length;
 }
 
 // Reset the store state
