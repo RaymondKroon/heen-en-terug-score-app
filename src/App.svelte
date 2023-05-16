@@ -63,6 +63,9 @@
         } else {
             window.location.href = '#/list';
         }
+
+        if (window.getSelection) {window.getSelection().removeAllRanges();}
+        else if (document.selection) {document.selection.empty();}
     }
 
     onMount(hashchange);
