@@ -1,5 +1,6 @@
 <script>
     import {calculateScores, getGame, updatePlayerBids, updatePlayerTricks} from './store.js';
+    import NumberInput from "./NumberInput.svelte";
 
     export let id;
     export let round;
@@ -51,9 +52,7 @@
 {#each players as player, i}
     <div class="player-input">
         <div class="name">{player.name}</div>
-        <!-- slider-->
-        <input type="number" min="0" max={maxTricks} step="1" bind:value="{_round.bids[i]}" />
-        <input type="range" min="0" max={maxTricks} step="1" bind:value="{_round.bids[i]}" />
+        <NumberInput max={maxTricks} bind:value="{_round.bids[i]}" />
     </div>
 {/each}
 {/if}
@@ -63,9 +62,7 @@
 {#each players as player, i}
     <div class="player-input">
         <div class="name">{player.name}</div>
-        <!-- slider-->
-        <input type="number" min="0" max={maxTricks} step="1" bind:value="{_round.tricks[i]}" />
-        <input type="range" min="0" max={maxTricks} step="1" bind:value="{_round.tricks[i]}" />
+        <NumberInput max={maxTricks} bind:value="{_round.tricks[i]}" />
     </div>
 {/each}
 {/if}
