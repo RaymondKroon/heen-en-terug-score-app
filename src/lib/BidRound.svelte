@@ -33,7 +33,7 @@
 </style>
 
 <h1>Bieden ronde {round + 1} ({_round.nCards})</h1>
-<Trump suit={_round.trump} />
+<Trump size=10 suit={_round.trump} />
 
 <h2>Spelers</h2>
 {#each players as player, i}
