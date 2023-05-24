@@ -13,6 +13,7 @@ const initialRound = {
     trump: '',
     bids: [],
     tricks: [],
+    dealer_id: 0,
 }
 
 // Initial store state
@@ -100,12 +101,13 @@ export function listPlayers(gameId) {
 }
 
 // Add a round to a specific game
-export function addRound(id, nCards, trump) {
+export function addRound(id, nCards, trump, dealer_id) {
     gameStore.update(store => {
         let gameIndex = store.games.findIndex(game => game.id === id);
         let round = Object.assign({}, initialRound);
         round.nCards = nCards;
         round.trump = trump;
+        round.dealer_id = dealer_id;
         store.games[gameIndex].rounds = [...store.games[gameIndex].rounds, round];
         return store;
     });

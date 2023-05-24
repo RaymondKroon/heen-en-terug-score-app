@@ -21,6 +21,7 @@
     let currentRound = getGame(id).rounds[currentRoundId];
 
     let game = getGame(id).rounds;
+    let dealer = players[currentRound.dealer_id];
 
     function playRound(i) {
         if (currentRound.bids && currentRound.bids.length > 0) {
@@ -70,13 +71,13 @@
         border-right: var(--border-color) solid 1px;
     }
 
-    td.odd {
-        background-color: var(--accent-color);
-    }
-
     td.score {
         margin-left: 4px;
         font-weight: 500;
+    }
+
+    td.player:nth-child(4n + 5), td.player:nth-child(4n + 6) {
+        background-color: var(--accent-color);
     }
 
     .check-icon {
@@ -104,6 +105,24 @@
         margin-right: 15px;
     }
 
+    .next-round > .dealer {
+        margin-left: 15px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .dealer > .name {
+        font-size: 2em;
+
+    }
+
+    .dealer > .label {
+        font-size: 0.8em;
+        color: gray;
+
+    }
+
 
 </style>
 
@@ -117,6 +136,9 @@
         <div class="next-round" on:click={_ => playRound(currentRoundId)}>
             <div class="cards">{currentRound.nCards}</div>
             <Trump size=4 suit={currentRound.trump}/>
+            {#if dealer}
+            <div class="dealer"><div class="label">geven</div><div class="name">{dealer.name}</div></div>
+            {/if}
         </div>
     {/if}
 
@@ -140,7 +162,7 @@
                 <td class="trump">{trump_render[round.trump]}</td>
 
                 {#each players as player, i}
-                    <td class="{i%2 === 0 ? 'even' : 'odd'}">
+                    <td class="bid player">
                         {#if round.bids && round.bids.length}
                             {#if !round.tricks || !round.tricks.length}
                                 {round.bids[player.id]}
@@ -154,7 +176,7 @@
                             {/if}
                         {/if}
                     </td>
-                    <td class="score {i%2 === 0 ? 'even' : 'odd'}">
+                    <td class="score player">
                         {#if round.tricks && round.tricks.length}
                             {#if round.totalScore}
                             {round.totalScore[player.id]}

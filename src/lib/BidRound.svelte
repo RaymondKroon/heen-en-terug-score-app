@@ -12,6 +12,18 @@
 
     const bids = Array(players.length).fill(0);
 
+    let starter_id = _round.dealer_id !== undefined ? (_round.dealer_id + 1) % players.length : undefined;
+
+    function playerName(p) {
+        if (p.id === starter_id)
+            return p.name + ' (S)';
+        else if (p.id === _round.dealer_id) {
+            return p.name + ' (D)';
+        } else {
+            return p.name;
+        }
+    }
+
     function save() {
         updatePlayerBids(id, round, bids)
         location.href = `#/play/${id}/${round}`;
@@ -38,7 +50,7 @@
 <h2>Spelers</h2>
 {#each players as player, i}
     <div class="player-input">
-        <div class="name">{player.name}</div>
+        <div class="name">{playerName(player)}</div>
         <NumberInput max={maxBid} bind:value={bids[i]} ></NumberInput>
     </div>
 {/each}

@@ -1,9 +1,6 @@
 <script>
     import { onMount } from 'svelte';
     import { addGame, addPlayer, addRound, gameExists } from './store.js';
-
-    export let id = Date.now();
-    export let name = new Date(id).toLocaleString('nl-NL');
     let players = [];
 
     onMount(async () => {
@@ -15,6 +12,9 @@
 
     // Save the changes
     async function saveChanges() {
+
+        const id = Date.now();
+        const name = new Date(id).toLocaleString('nl-NL');
 
         if (gameExists(id)) {
             console.log('game exists, TODO');
@@ -31,12 +31,19 @@
         }
 
         let cardsPerRound = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+        let dealer = getRandomInt(players.length);
         cardsPerRound.forEach((cards, _) => {
-            addRound(id, cards, random_trump());
+            addRound(id, cards, random_trump(), dealer);
+            dealer = (dealer + 1) % players.length;
         });
 
         window.location.hash = '#/game/' + id;
     }
+
+    function getRandomInt(max) {
+        return Math.floor(Math.random() * max);
+    }
+
 
     function random_trump() {
         let trumps = ['heart', 'diamond', 'spade', 'club', 'none'];
@@ -57,7 +64,6 @@
 </style>
 
 <h1>Nieuw spel</h1>
-<p>naam: {name}</p>
 
 {#each players as player, index}
     <div class="editable-player">
