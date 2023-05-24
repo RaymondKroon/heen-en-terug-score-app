@@ -27,7 +27,6 @@
         padding: 8px;
         cursor: pointer;
         outline: none;
-        transition: background-color 0.3s ease;
     }
 
     .slider-button:first-child {
