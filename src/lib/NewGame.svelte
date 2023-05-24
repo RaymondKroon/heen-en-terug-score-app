@@ -23,15 +23,17 @@
 
         // Add the game
         addGame(id, name);
+        let nPlayers = 0
         for (let i = 0; i < players.length; i++) {
             if (players[i] === '') {
                 continue;
             }
+            nPlayers++;
             addPlayer(id, players[i]);
         }
 
         let cardsPerRound = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-        let dealer = getRandomInt(players.length);
+        let dealer = getRandomInt(nPlayers);
         cardsPerRound.forEach((cards, _) => {
             addRound(id, cards, random_trump(), dealer);
             dealer = (dealer + 1) % players.length;
