@@ -36,7 +36,7 @@
         let dealer = getRandomInt(nPlayers);
         cardsPerRound.forEach((cards, _) => {
             addRound(id, cards, random_trump(), dealer);
-            dealer = (dealer + 1) % players.length;
+            dealer = (dealer + 1) % nPlayers;
         });
 
         window.location.hash = '#/game/' + id;
