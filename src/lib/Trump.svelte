@@ -38,13 +38,13 @@
 
 <div class="trump" style="font-size: {fontSize}; height: {height}">
     {#if suit === 'heart'}
-        <div class="heart" >&heartsuit;</div>
+        <div class="heart" >&hearts;</div>
     {:else if suit === 'spade'}
-        <div class="spade">&spadesuit;</div>
+        <div class="spade">&spades;</div>
     {:else if suit === 'club'}
-        <div class="club">&clubsuit;</div>
+        <div class="club">&clubs;</div>
     {:else if suit === 'diamond'}
-        <div class="diamond" >&diamondsuit;</div>
+        <div class="diamond" >&diams;</div>
     {:else}
         <div class="none" style="font-size: {size*3}px">geen troef</div>
     {/if}
