@@ -51,6 +51,7 @@
 
     table {
         border-collapse: collapse;
+        font-size: 1.3em;
     }
 
     tr {
@@ -101,7 +102,7 @@
     }
 
     .next-round > .cards {
-        font-size: 3em;
+        font-size: 4em;
         margin-right: 15px;
     }
 
@@ -113,8 +114,7 @@
     }
 
     .dealer > .name {
-        font-size: 2em;
-
+        font-size: 2.5em;
     }
 
     .dealer > .label {
@@ -135,7 +135,7 @@
         <h2>Volgende ronde</h2>
         <div class="next-round" on:click={_ => playRound(currentRoundId)}>
             <div class="cards">{currentRound.nCards}</div>
-            <Trump size=4 suit={currentRound.trump}/>
+            <Trump size=7 suit={currentRound.trump}/>
             {#if dealer}
             <div class="dealer"><div class="label">geven</div><div class="name">{dealer.name}</div></div>
             {/if}
