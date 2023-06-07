@@ -47,6 +47,11 @@
 
     .header-item {
         writing-mode: vertical-lr;
+        width: 100%;
+        text-align: justify;
+        display: flex;
+        flex-direction: row;
+        align-items: center;
     }
 
     table {
@@ -56,15 +61,12 @@
 
     tr {
         flex-direction: row;
+        text-align: center;
+        margin: 0;
     }
 
     tr.active {
         border: #646cff solid 1px;
-    }
-
-    tr {
-        text-align: center;
-        margin: 0;
     }
 
     td.trump {
@@ -148,8 +150,8 @@
         <tr>
             <th colspan="2"></th>
             {#each players as player}
-                <th colspan=2 class="header-item">
-                    {player.name}
+                <th colspan=2>
+                    <div class="header-item">{player.name}</div>
                 </th>
             {/each}
             <th/>
