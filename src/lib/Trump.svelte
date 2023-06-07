@@ -11,6 +11,9 @@
         flex-direction: row;
         justify-content: center;
         align-items: center;
+        padding-top: 10px;
+        font-family: 'Noto Emoji';
+        font-size: 48px;
         /*font-size: 1em;*/
         /*height: 14px;*/
     }

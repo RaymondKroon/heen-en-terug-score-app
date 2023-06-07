@@ -135,7 +135,7 @@
         <h2>Volgende ronde</h2>
         <div class="next-round" on:click={_ => playRound(currentRoundId)}>
             <div class="cards">{currentRound.nCards}</div>
-            <Trump size=7 suit={currentRound.trump}/>
+            <Trump size=6 suit={currentRound.trump}/>
             {#if dealer}
             <div class="dealer"><div class="label">geven</div><div class="name">{dealer.name}</div></div>
             {/if}
