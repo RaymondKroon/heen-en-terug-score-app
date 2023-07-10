@@ -1,6 +1,7 @@
 <script>
     // array of LeaderboardEntry
     export let entries = [];
+    let zoom = false;
 </script>
 
 <style>
@@ -32,11 +33,15 @@
         font-size: 1.5em;
         font-weight: bold;
     }
+
+    .zoom {
+        font-size: 2.5em
+    }
 </style>
 
-<div class="leaderboard">
+<div on:click={() => zoom = !zoom} class="leaderboard">
     {#each entries as entry}
-        <div class="entry">
+        <div class:zoom={zoom} class="entry">
             <div class="entry-name">
                 {entry.name}
             </div>

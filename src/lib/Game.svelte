@@ -1,7 +1,6 @@
 <script>
-    import {calculateScores, currentRoundId as _currentRoundId, getGame, getStandings, listPlayers} from './store.js';
+    import {currentRoundId as _currentRoundId, getGame, getStandings, listPlayers} from './store.js';
     import Leaderboard from "./Leaderboard.svelte";
-    import {LeaderboardEntry} from "./lib.js";
     import Trump from "./Trump.svelte";
 
     export let id;
@@ -13,8 +12,6 @@
         'club': 'K',
         'none': '-'
     }
-
-    // calculateScores(id);
 
     let players = listPlayers(id);
     let currentRoundId = _currentRoundId(id);
@@ -124,7 +121,6 @@
         color: gray;
 
     }
-
 
 </style>
 
