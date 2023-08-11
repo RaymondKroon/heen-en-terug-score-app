@@ -7,6 +7,7 @@
     import PlayRound from "./lib/PlayRound.svelte";
     import ScoreRound from "./lib/ResultRound.svelte";
     import EditRound from "./lib/EditRound.svelte";
+    import Stats from "./lib/Stats.svelte";
 
     function handleMessage(event) {
         if (event.detail.type === 'play') {
@@ -60,7 +61,11 @@
             let round = parseInt(id_round.split('/')[1]);
             page = EditRound;
             props = {id, round};
-        } else {
+        }
+        else if (path.startsWith('/stats')) {
+            page = Stats;
+        }
+        else {
             window.location.href = '#/list';
         }
 

@@ -172,10 +172,25 @@ function _getGameFromId(store, id) {
     return store.games.find(game => game.id === id);
 }
 
-export function currentRoundId(id) {
-    let rounds = getGame(id).rounds;
+export function currentRoundId(gameId) {
+    let rounds = getGame(gameId).rounds;
     let result = rounds.findIndex(round => round.tricks.length === 0)
     return result >= 0 ? result : rounds.length;
+}
+
+export function getTotals() {
+    const store = get(gameStore);
+    let totals = store.games.reduce((acc, game) => {
+        game.players.forEach(player => {
+            if (!acc[player.name]) {
+                acc[player.name] = { name: player.name, score: 0, games: 0 };
+            }
+            acc[player.name].score += player.score;
+            acc[player.name].games += 1;
+        });
+        return acc;
+    }, {})
+    return Object.values(totals);
 }
 
 // Reset the store state
