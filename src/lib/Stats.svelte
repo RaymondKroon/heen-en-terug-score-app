@@ -5,7 +5,7 @@ import Leaderboard from "./Leaderboard.svelte";
 
 let playerTotals = getTotals();
 let totals = playerTotals.sort((a, b) => b.score - a.score);
-let average = playerTotals.map((t) => ({...t, score: t.score/t.games})).sort((a, b) => b.score - a.score);
+let average = playerTotals.map((t) => ({...t, score: (t.score/t.games).toFixed(1)})).sort((a, b) => b.score - a.score);
 
 </script>
 
