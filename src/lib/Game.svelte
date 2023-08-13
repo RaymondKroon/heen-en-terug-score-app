@@ -46,13 +46,15 @@
 
             if (navigator.canShare) {
                 const data = {
+                    url: '#/share/TODODATA',
                     files: [
                         new File([blob], 'stand.png', {
                             type: blob.type,
                         }),
                     ],
-                    title: 'Stand',
-                    text: 'TODO',
+
+                    title: '#/share/TODODATATITLE',
+                    text: '#/share/TODODATATXT',
                 };
                 if (navigator.canShare(data)) {
                     try {
