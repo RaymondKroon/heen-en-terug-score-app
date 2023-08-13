@@ -8,6 +8,7 @@
     import ScoreRound from "./lib/ResultRound.svelte";
     import EditRound from "./lib/EditRound.svelte";
     import Stats from "./lib/Stats.svelte";
+    import Shared from "./lib/Shared.svelte";
 
     function handleMessage(event) {
         if (event.detail.type === 'play') {
@@ -64,6 +65,11 @@
         }
         else if (path.startsWith('/stats')) {
             page = Stats;
+        }
+        else if (path.startsWith('/shared')) {
+            let data = path.slice(8);
+            page = Shared;
+            props = {data};
         }
         else {
             window.location.href = '#/list';

@@ -1,5 +1,5 @@
 <script>
-    import {currentRoundId as _currentRoundId, getGame, getStandings, listPlayers} from './store.js';
+    import {currentRoundId as _currentRoundId, getGame, getStandings, listPlayers, shareGame} from './store.js';
     import Leaderboard from "./Leaderboard.svelte";
     import Trump from "./Trump.svelte";
     import { toBlob } from 'html-to-image';
@@ -45,16 +45,14 @@
             let blob = await toBlob(node, {filter: filter, backgroundColor: 'white'})
 
             if (navigator.canShare) {
+                let gameData = shareGame(id);
                 const data = {
-                    url: '#/share/TODODATA',
+                    url: '#/shared/' + gameData,
                     files: [
                         new File([blob], 'stand.png', {
                             type: blob.type,
                         }),
-                    ],
-
-                    title: '#/share/TODODATATITLE',
-                    text: '#/share/TODODATATXT',
+                    ]
                 };
                 if (navigator.canShare(data)) {
                     try {

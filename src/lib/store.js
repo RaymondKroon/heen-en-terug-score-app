@@ -1,4 +1,4 @@
-import { get, writable } from 'svelte/store';
+import {get, writable} from 'svelte/store';
 
 const localStorageKey = 'heen-en-weer-store';
 
@@ -73,6 +73,16 @@ export function getGame(gameId) {
     const game = _getGameFromId(store, gameId)
     //clone the game object to prevent mutation
     return JSON.parse(JSON.stringify(game));
+}
+
+export function shareGame(gameId) {
+    let game = getGame(gameId);
+    let encodedGame = btoa(JSON.stringify(game));
+    return encodedGame;
+}
+
+export function loadGame(encodedGame) {
+    return JSON.parse(atob(encodedGame));
 }
 
 // Add a player to a specific game
@@ -158,6 +168,10 @@ export function calculateScores(id) {
 
 export function getStandings(gameId) {
     let game = getGame(gameId);
+    return getStandingsForGame(game);
+}
+
+export function getStandingsForGame(game) {
     let standings = game.players.map(player => {
         return {
             name: player.name,
