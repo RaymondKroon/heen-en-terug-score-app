@@ -2,6 +2,7 @@
     import {currentRoundId as _currentRoundId, getGame, getStandings, listPlayers} from './store.js';
     import Leaderboard from "./Leaderboard.svelte";
     import Trump from "./Trump.svelte";
+    import { toBlob } from 'html-to-image';
 
     export let id;
 
@@ -32,6 +33,49 @@
         location.href = `#/edit/${id}/${i}`;
     }
 
+    async function exportStandings() {
+
+        function filter(node) {
+            return node.tagName ? node.tagName.toLowerCase() !== 'a' : true;
+        }
+
+        let node = document.getElementById('standings');
+
+        try {
+            let blob = await toBlob(node, {filter: filter, backgroundColor: 'white'})
+
+            if (navigator.canShare) {
+                const data = {
+                    files: [
+                        new File([blob], 'stand.png', {
+                            type: blob.type,
+                        }),
+                    ],
+                    title: 'Stand',
+                    text: 'TODO',
+                };
+                if (navigator.canShare(data)) {
+                    try {
+                        await navigator.share(data);
+                    } catch (err) {
+                        if (err.name !== 'AbortError') {
+                            console.error(err.name, err.message);
+                        }
+                    } finally {
+                        return;
+                    }
+                }
+            } else {
+                let link = document.createElement('a');
+                link.download = 'stand.png';
+                link.href = URL.createObjectURL(blob);
+                link.click();
+            }
+        } catch (e) {
+            console.error('oops, something went wrong!', e);
+        }
+    }
+
 </script>
 
 <style>
@@ -40,6 +84,10 @@
         display: flex;
         flex-direction: column;
         align-items: flex-start;
+    }
+
+    #standings {
+        width: 100%;
     }
 
     .header-item {
@@ -126,8 +174,11 @@
 
 
 <div class="game">
-    <h1>Stand <a href="#/list">↑</a></h1>
-    <Leaderboard entries={getStandings(id)}/>
+    <div id="standings">
+        <h1>Stand <a href="#/list">↑</a>
+            <a href="#" on:click|preventDefault={exportStandings}><span class="material-icons">share</span></a></h1>
+        <Leaderboard entries={getStandings(id)}/>
+    </div>
 
     {#if currentRound}
         <h2>Volgende ronde</h2>
@@ -135,7 +186,10 @@
             <div class="cards">{currentRound.nCards}</div>
             <Trump size=6 suit={currentRound.trump}/>
             {#if dealer}
-            <div class="dealer"><div class="label">geven</div><div class="name">{dealer.name}</div></div>
+                <div class="dealer">
+                    <div class="label">geven</div>
+                    <div class="name">{dealer.name}</div>
+                </div>
             {/if}
         </div>
     {/if}
@@ -177,7 +231,7 @@
                     <td class="score player">
                         {#if round.tricks && round.tricks.length}
                             {#if round.totalScore}
-                            {round.totalScore[player.id]}
+                                {round.totalScore[player.id]}
                             {/if}
                         {/if}
                     </td>
