@@ -1,4 +1,6 @@
 import {get, writable} from 'svelte/store';
+import {deflate, inflate} from "pako";
+import { Base64 } from 'js-base64';
 
 const localStorageKey = 'heen-en-weer-store';
 
@@ -77,12 +79,14 @@ export function getGame(gameId) {
 
 export function shareGame(gameId) {
     let game = getGame(gameId);
-    let encodedGame = btoa(JSON.stringify(game));
-    return encodedGame;
+    let deflated = deflate(JSON.stringify(game));
+    return Base64.fromUint8Array(deflated, true);
 }
 
 export function loadGame(encodedGame) {
-    return JSON.parse(atob(encodedGame));
+    let deflated = Base64.toUint8Array(encodedGame);
+    let inflated = inflate(deflated, {to: 'string'});
+    return JSON.parse(inflated);
 }
 
 // Add a player to a specific game
