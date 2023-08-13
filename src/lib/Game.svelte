@@ -40,9 +40,10 @@
         }
 
         let node = document.getElementById('standings');
+        const bgColor = getComputedStyle(document.querySelector(':root')).backgroundColor
 
         try {
-            let blob = await toBlob(node, {filter: filter, backgroundColor: 'white'})
+            let blob = await toBlob(node, {filter: filter, backgroundColor: bgColor})
 
             if (navigator.canShare) {
                 let gameData = shareGame(id);

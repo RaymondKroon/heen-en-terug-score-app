@@ -73,7 +73,7 @@
 </style>
 
 <div class="game">
-    <h1>Stand</h1>
+    <h1>Stand {game.name}</h1>
     <Leaderboard entries={getStandingsForGame(game)}/>
 
     <h2>Rondes</h2>
