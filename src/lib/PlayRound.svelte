@@ -34,7 +34,7 @@
 <Trump size=8 suit="{_round.trump}" />
 
 <h2>Geboden <a href={`#/edit/${id}/${round}`}>✎</a></h2>
-<Leaderboard entries={players.map(p => new LeaderboardEntry(playerName(p), _round.bids[p.id]))} />
+<Leaderboard zoom={true} entries={players.map(p => new LeaderboardEntry(playerName(p), _round.bids[p.id]))} />
 
 <button on:click="{gotoResult}">Resultaat</button>
 

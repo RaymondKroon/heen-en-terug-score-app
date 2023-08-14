@@ -1,7 +1,7 @@
 <script>
     // array of LeaderboardEntry
     export let entries = [];
-    let zoom = false;
+    export let zoom = false;
 </script>
 
 <style>
