@@ -178,7 +178,7 @@
     <div id="standings">
         <h1>Stand <a href="#/list">↑</a>
             <a href="#" on:click|preventDefault={exportStandings}><span class="material-icons">share</span></a></h1>
-        <Leaderboard entries={getStandings(id)}/>
+        <Leaderboard zoom={true} entries={getStandings(id)}/>
     </div>
 
     {#if currentRound}
