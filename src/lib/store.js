@@ -3,6 +3,7 @@ import {deflate, inflate} from "pako";
 import { Base64 } from 'js-base64';
 
 const localStorageKey = 'heen-en-weer-store';
+const GAME_VERSION = 1;
 
 const initialPlayer = {
     id: 0,
@@ -48,6 +49,7 @@ gameStore.subscribe(store => {
 export function addGame(id, name) {
     gameStore.update(store => {
         const game = {
+            gameVersion: GAME_VERSION,
             id: id,
             name: name,
             players: [],
@@ -77,7 +79,12 @@ export function gameExists(gameId) {
 
 export function getGame(gameId) {
     const store = get(gameStore);
-    const game = _getGameFromId(store, gameId)
+    let game = _getGameFromId(store, gameId)
+    if (game.gameVersion === undefined || game.gameVersion < GAME_VERSION) {
+        game.gameVersion = GAME_VERSION;
+        calculateScores(gameId);
+        game = _getGameFromId(store, gameId)
+    }
     //clone the game object to prevent mutation
     return JSON.parse(JSON.stringify(game));
 }
