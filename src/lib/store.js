@@ -7,7 +7,12 @@ const localStorageKey = 'heen-en-weer-store';
 const initialPlayer = {
     id: 0,
     name: 'empty',
-    score: 0
+    score: 0,
+    highestRoundScore: 0,
+    nCorrectBids: 0,
+    highestRoundTricks: 0,
+    leaderBoardPosition: 0,
+    previousLeaderBoardPosition: undefined,
 }
 
 const initialRound = {
@@ -158,28 +163,56 @@ export function updatePlayerTricks(gameId, roundId, tricks) {
     });
 }
 
-// Calculate scores for a specific game and update the store state
 export function calculateScores(id) {
     gameStore.update(store => {
         let game = _getGameFromId(store, id);
+
         game.players.forEach(player => {
-            let score = 0;
-            game.rounds.forEach(round => {
-                if (!round.totalScore) {
-                    round.totalScore = Array(game.players.length).fill(0);
-                }
-                const bid = round.bids[player.id];
-                const tricks = round.tricks[player.id];
-                if ((bid || bid === 0) && (tricks || tricks === 0)) {
+            player.score = 0;
+            player.highestRoundScore = 0;
+            player.nCorrectBids = 0;
+            player.highestRoundTricks = 0;
+            player.leaderBoardPosition = player.id + 1;
+            player.previousLeaderBoardPosition = undefined;
+        });
+
+        game.rounds.forEach(round => {
+            if (!round.totalScore) {
+                round.totalScore = Array(game.players.length).fill(0);
+            }
+
+            if (round.bids && round.bids.length > 0 && round.tricks && round.tricks.length > 0) {
+                game.players.forEach(player => {
+                    const bid = round.bids[player.id];
+                    const tricks = round.tricks[player.id];
+                    let score = player.score;
+
+                    let roundScore = 0;
+
                     if (bid === tricks) {
-                        score += tricks + 5;
+                        roundScore = 5 + bid;
+                        player.nCorrectBids = player.nCorrectBids + 1;
                     } else {
-                        score += tricks;
+                        roundScore = tricks;
                     }
+                    score += roundScore;
+
                     round.totalScore[player.id] = score;
-                }
-            });
-            player.score = score;
+                    if (roundScore > player.highestRoundScore) {
+                        player.highestRoundScore = roundScore;
+                    }
+                    if (tricks > player.highestRoundTricks) {
+                        player.highestRoundTricks = tricks;
+                    }
+
+                    player.score = score;
+                });
+                let standings = [...game.players].sort(comparePlayerScore);
+                standings.forEach((player, index) => {
+                    player.previousLeaderBoardPosition = player.leaderBoardPosition;
+                    player.leaderBoardPosition = index + 1;
+                });
+            }
         });
         return store;
     });
@@ -190,15 +223,32 @@ export function getStandings(gameId) {
     return getStandingsForGame(game);
 }
 
+function comparePlayerScore(a, b) {
+    if (a.score !== b.score) {
+        return b.score - a.score;
+    } else if (a.nCorrectBids !== b.nCorrectBids) {
+        return b.nCorrectBids - a.nCorrectBids;
+    } else if (a.highestRoundTricks !== b.highestRoundTricks) {
+        return b.highestRoundTricks - a.highestRoundTricks;
+    } else {
+        return b.highestRoundScore - a.highestRoundScore;
+    }
+}
+
 export function getStandingsForGame(game) {
-    let standings = game.players.map(player => {
+    let standings = [...game.players];
+    standings.sort((a, b) => a.leaderBoardPosition - b.leaderBoardPosition);
+    return standings.map(player => {
+        let standingsDiff = undefined
+        if (player.previousLeaderBoardPosition !== undefined) {
+            standingsDiff = player.previousLeaderBoardPosition - player.leaderBoardPosition;
+        }
         return {
             name: player.name,
-            score: player.score
+            score: player.score,
+            options: standingsDiff !== undefined ? {standingsDiff} : {},
         }
     });
-    standings.sort((a, b) => b.score - a.score);
-    return standings;
 }
 
 function _getGameFromId(store, id) {

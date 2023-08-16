@@ -12,13 +12,13 @@
     const players = game.players;
     let starter_id = _round.dealer_id !== undefined ? (_round.dealer_id + 1) % players.length : undefined;
 
-    function playerName(p) {
+    function playerOptions(p) {
         if (p.id === starter_id)
-            return p.name + ' (S)';
+            return {text: 's'}
         else if (p.id === _round.dealer_id) {
-            return p.name + ' (D)';
+            return {text: 'd'};
         } else {
-            return p.name;
+            return {};
         }
     }
 
@@ -34,7 +34,7 @@
 <Trump size=8 suit="{_round.trump}" />
 
 <h2>Geboden <a href={`#/edit/${id}/${round}`}>✎</a></h2>
-<Leaderboard zoom={true} entries={players.map(p => new LeaderboardEntry(playerName(p), _round.bids[p.id]))} />
+<Leaderboard zoom={true} entries={players.map(p => new LeaderboardEntry(p.name, _round.bids[p.id], playerOptions(p)))} />
 
 <button on:click="{gotoResult}">Resultaat</button>
 

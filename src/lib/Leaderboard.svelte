@@ -34,14 +34,43 @@
         font-weight: bold;
     }
 
+    .entry-options {
+        /*flex-grow: 1;*/
+        flex-basis: 5%;
+        font-size: 1em;
+    }
+
     .zoom {
         font-size: 2.5em
+    }
+
+    .up {
+        color: green;
+    }
+
+    .down {
+        color: red;
     }
 </style>
 
 <div on:click={() => zoom = !zoom} class="leaderboard">
     {#each entries as entry}
         <div class:zoom={zoom} class="entry">
+            <div class="entry-options">
+            {#if entry.options.text}
+                {entry.options.text}
+            {:else if entry.options.standingsDiff !== undefined}
+                {#if (entry.options.standingsDiff > 0)}
+                    <span class="material-icons up">keyboard_arrow_up</span>
+                {:else if (entry.options.standingsDiff < 0)}
+                    <span class="material-icons down">keyboard_arrow_down</span>
+                {:else}
+                    &nbsp;
+                {/if}
+            {:else}
+                &nbsp;
+            {/if}
+            </div>
             <div class="entry-name">
                 {entry.name}
             </div>
