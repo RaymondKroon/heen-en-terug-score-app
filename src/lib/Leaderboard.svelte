@@ -2,6 +2,9 @@
     // array of LeaderboardEntry
     export let entries = [];
     export let zoom = false;
+    $: factor = zoom ? 2:  1;
+    const arrow_offsets = [-10, -5, -1, -15];
+
 </script>
 
 <style>
@@ -51,6 +54,14 @@
     .down {
         color: red;
     }
+
+    .arrow-stack {
+    }
+
+    .arrow {
+        font-size: 100%;
+        position: absolute;
+    }
 </style>
 
 <div on:click={() => zoom = !zoom} class="leaderboard">
@@ -61,9 +72,15 @@
                 {entry.options.text}
             {:else if entry.options.standingsDiff !== undefined}
                 {#if (entry.options.standingsDiff > 0)}
-                    <span class="material-icons up">keyboard_arrow_up</span>
+                    {#each {length: entry.options.standingsDiff} as _, i}
+                        <span class="material-icons arrow up" style="transform: translateY({arrow_offsets[i] * factor}px);">keyboard_arrow_up</span>
+                    {/each}
                 {:else if (entry.options.standingsDiff < 0)}
-                    <span class="material-icons down">keyboard_arrow_down</span>
+                    <div class="arrow-stack">
+                        {#each {length: -entry.options.standingsDiff} as _, i}
+                        <span class="material-icons arrow down" style="transform: translateY({arrow_offsets[i] * factor}px);">keyboard_arrow_down</span>
+                        {/each}
+                    </div>
                 {:else}
                     &nbsp;
                 {/if}
