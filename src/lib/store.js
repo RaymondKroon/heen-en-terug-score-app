@@ -83,6 +83,21 @@ export function shareGame(gameId) {
     return Base64.fromUint8Array(deflated, true);
 }
 
+export function importGame(game) {
+    let id = game.id;
+    let counter = 1;
+    while (gameExists(id)) {
+        id = `${game.id}+${counter}`;
+    }
+    game.id = id;
+    gameStore.update(store => {
+        store.games = [...store.games, game];
+        return store;
+    });
+
+    return game.id;
+}
+
 export function loadGame(encodedGame) {
     let deflated = Base64.toUint8Array(encodedGame);
     let inflated = inflate(deflated, {to: 'string'});

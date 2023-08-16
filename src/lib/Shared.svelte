@@ -1,5 +1,5 @@
 <script>
-    import {getStandings, getStandingsForGame, loadGame} from "./store.js";
+    import {getStandingsForGame, loadGame, importGame as _importGame} from "./store.js";
     import Leaderboard from "./Leaderboard.svelte";
 
     export let data;
@@ -14,6 +14,11 @@
         'diamond': 'R',
         'club': 'K',
         'none': '-'
+    }
+
+    function importGame() {
+        let id = _importGame(game);
+        window.location.hash = '#/game/' + id;
     }
 
 </script>
@@ -43,10 +48,6 @@
         flex-direction: row;
         text-align: center;
         margin: 0;
-    }
-
-    tr.active {
-        border: #646cff solid 1px;
     }
 
     td.trump {
@@ -122,4 +123,6 @@
         {/each}
         </tbody>
     </table>
+
+    <button on:click={importGame}>importeren</button>
 </div>
