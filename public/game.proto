@@ -1,0 +1,18 @@
+syntax = "proto3";
+
+message Player {
+  string name = 1;
+}
+
+message Round {
+  string trump = 1;
+  repeated uint32 bids = 2;
+  repeated uint32 tricks = 3;
+}
+
+message Game {
+  string name = 1;
+  repeated Player players = 2;
+  repeated Round rounds = 3;
+  uint32 start_dealer = 4;
+}

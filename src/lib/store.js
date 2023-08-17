@@ -1,6 +1,7 @@
 import {get, writable} from 'svelte/store';
-import {deflate, inflate} from "pako";
+import {deflate, gzip, inflate} from "pako";
 import { Base64 } from 'js-base64';
+import protobuf from 'protobufjs';
 
 const localStorageKey = 'heen-en-weer-store';
 const GAME_VERSION = 1;
@@ -22,6 +23,16 @@ const initialRound = {
     bids: [],
     tricks: [],
     dealer_id: 0,
+}
+
+function initialGame(id, name) {
+    return {
+        gameVersion: GAME_VERSION,
+        id: id,
+        name: name,
+        players: [],
+        rounds: [],
+    };
 }
 
 // Initial store state
@@ -48,13 +59,7 @@ gameStore.subscribe(store => {
 // Add a new game to the store
 export function addGame(id, name) {
     gameStore.update(store => {
-        const game = {
-            gameVersion: GAME_VERSION,
-            id: id,
-            name: name,
-            players: [],
-            rounds: [],
-        };
+        const game = initialGame(id, name);
         store.games = [...store.games, game];
         return store;
     });
@@ -95,6 +100,28 @@ export function shareGame(gameId) {
     return Base64.fromUint8Array(deflated, true);
 }
 
+export async function shareGameV2(gameId) {
+    let game = getGame(gameId);
+
+    let root = await protobuf.load("./game.proto");
+    let Game = root.lookupType("Game");
+
+    let players = game.players.map(p => ({name: p.name}));
+    let rounds = game.rounds.map(r => ({trump: r.trump, bids: r.bids, tricks: r.tricks }))
+    let payload = {
+        name: game.name,
+        players: players,
+        rounds: rounds,
+        start_dealer: game.rounds[0].dealer_id,
+    }
+    let err = Game.verify(payload);
+    let message = Game.create(payload);
+
+    let buffer = Game.encode(message).finish();
+    buffer = deflate(buffer, {level: 9});
+    return Base64.fromUint8Array(buffer, false);
+}
+
 export function importGame(game) {
     let id = game.id;
     let counter = 1;
@@ -114,6 +141,39 @@ export function loadGame(encodedGame) {
     let deflated = Base64.toUint8Array(encodedGame);
     let inflated = inflate(deflated, {to: 'string'});
     return JSON.parse(inflated);
+}
+
+export async function loadGameV2(encodedGame) {
+    let deflated = Base64.toUint8Array(encodedGame);
+    let inflated = inflate(deflated);
+    let root = await protobuf.load("./game.proto");
+    let Game = root.lookupType("Game");
+    let message = Game.decode(inflated);
+    let protoGame = Game.toObject(message, {defaults: true});
+
+    let name = protoGame.name;
+    let id = Date.now();
+
+    let game = initialGame(id, name)
+    game.players = protoGame.players.map((p, i) => ({id: i, name: p.name}));
+
+    let cardsPerRound = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
+    let dealer = protoGame.start_dealer;
+    let nPlayers = game.players.length;
+    game.rounds = cardsPerRound.map((cards, i) => {
+        dealer = (dealer + 1) % nPlayers;
+        let round = {...initialRound}
+        round.dealer_id = dealer;
+        round.nCards = cards;
+        round.trump = protoGame.rounds[i].trump;
+        round.bids = protoGame.rounds[i].bids;
+        round.tricks = protoGame.rounds[i].tricks;
+        return round;
+    });
+
+    calculateScoresForGame(game);
+
+    return game;
 }
 
 // Add a player to a specific game
@@ -170,57 +230,62 @@ export function updatePlayerTricks(gameId, roundId, tricks) {
     });
 }
 
+function calculateScoresForGame(game) {
+    game.players.forEach(player => {
+        player.score = 0;
+        player.highestRoundScore = 0;
+        player.nCorrectBids = 0;
+        player.highestRoundTricks = 0;
+        player.leaderBoardPosition = player.id + 1;
+        player.previousLeaderBoardPosition = undefined;
+    });
+
+    game.rounds.forEach(round => {
+        if (!round.totalScore) {
+            round.totalScore = Array(game.players.length).fill(0);
+        }
+
+        if (round.bids && round.bids.length > 0 && round.tricks && round.tricks.length > 0) {
+            game.players.forEach(player => {
+                const bid = round.bids[player.id];
+                const tricks = round.tricks[player.id];
+                let score = player.score;
+
+                let roundScore = 0;
+
+                if (bid === tricks) {
+                    roundScore = 5 + bid;
+                    player.nCorrectBids = player.nCorrectBids + 1;
+                } else {
+                    roundScore = tricks;
+                }
+                score += roundScore;
+
+                round.totalScore[player.id] = score;
+                if (roundScore > player.highestRoundScore) {
+                    player.highestRoundScore = roundScore;
+                }
+                if (tricks > player.highestRoundTricks) {
+                    player.highestRoundTricks = tricks;
+                }
+
+                player.score = score;
+            });
+            let standings = [...game.players].sort(comparePlayerScore);
+            standings.forEach((player, index) => {
+                player.previousLeaderBoardPosition = player.leaderBoardPosition;
+                player.leaderBoardPosition = index + 1;
+            });
+        }
+    });
+}
+
 export function calculateScores(id) {
     gameStore.update(store => {
         let game = _getGameFromId(store, id);
 
-        game.players.forEach(player => {
-            player.score = 0;
-            player.highestRoundScore = 0;
-            player.nCorrectBids = 0;
-            player.highestRoundTricks = 0;
-            player.leaderBoardPosition = player.id + 1;
-            player.previousLeaderBoardPosition = undefined;
-        });
+        calculateScoresForGame(game);
 
-        game.rounds.forEach(round => {
-            if (!round.totalScore) {
-                round.totalScore = Array(game.players.length).fill(0);
-            }
-
-            if (round.bids && round.bids.length > 0 && round.tricks && round.tricks.length > 0) {
-                game.players.forEach(player => {
-                    const bid = round.bids[player.id];
-                    const tricks = round.tricks[player.id];
-                    let score = player.score;
-
-                    let roundScore = 0;
-
-                    if (bid === tricks) {
-                        roundScore = 5 + bid;
-                        player.nCorrectBids = player.nCorrectBids + 1;
-                    } else {
-                        roundScore = tricks;
-                    }
-                    score += roundScore;
-
-                    round.totalScore[player.id] = score;
-                    if (roundScore > player.highestRoundScore) {
-                        player.highestRoundScore = roundScore;
-                    }
-                    if (tricks > player.highestRoundTricks) {
-                        player.highestRoundTricks = tricks;
-                    }
-
-                    player.score = score;
-                });
-                let standings = [...game.players].sort(comparePlayerScore);
-                standings.forEach((player, index) => {
-                    player.previousLeaderBoardPosition = player.leaderBoardPosition;
-                    player.leaderBoardPosition = index + 1;
-                });
-            }
-        });
         return store;
     });
 }

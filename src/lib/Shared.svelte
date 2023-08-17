@@ -1,12 +1,14 @@
 <script>
-    import {getStandingsForGame, loadGame, importGame as _importGame} from "./store.js";
+    import {getStandingsForGame, loadGameV2, importGame as _importGame} from "./store.js";
     import Leaderboard from "./Leaderboard.svelte";
+    import { onMount } from 'svelte';
 
     export let data;
 
+
     // base64 deserialize data
-    const game = loadGame(data);
-    const players = game.players;
+    let game;
+    let players = [];
 
     const trump_render = {
         'heart': 'H',
@@ -15,6 +17,11 @@
         'club': 'K',
         'none': '-'
     }
+
+    onMount(async () => {
+        game = await loadGameV2(data);
+        players = game.players;
+    });
 
     function importGame() {
         let id = _importGame(game);
@@ -73,6 +80,7 @@
     }
 </style>
 
+{#if game}
 <div class="game">
     <h1>Stand {game.name}</h1>
     <Leaderboard entries={getStandingsForGame(game)}/>
@@ -126,3 +134,4 @@
 
     <button on:click={importGame}>importeren</button>
 </div>
+{/if}

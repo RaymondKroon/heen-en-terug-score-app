@@ -1,5 +1,5 @@
 <script>
-    import {currentRoundId as _currentRoundId, getGame, getStandings, listPlayers, shareGame} from './store.js';
+    import {currentRoundId as _currentRoundId, getGame, getStandings, listPlayers, shareGame, shareGameV2} from './store.js';
     import Leaderboard from "./Leaderboard.svelte";
     import Trump from "./Trump.svelte";
     import { toBlob } from 'html-to-image';
@@ -36,7 +36,15 @@
     async function exportStandings() {
 
         function filter(node) {
-            return node.tagName ? node.tagName.toLowerCase() !== 'a' : true;
+            if (node.tagName && node.tagName.toLowerCase() === 'a') {
+                return false;
+            }
+
+            if (node.classList && node.classList.contains('entry-options')) {
+                return false;
+            }
+
+            return true;
         }
 
         let node = document.getElementById('standings');
@@ -46,9 +54,9 @@
             let blob = await toBlob(node, {filter: filter, backgroundColor: bgColor})
 
             if (navigator.canShare) {
-                let gameData = shareGame(id);
+                let gameData = await shareGameV2(id);
                 const data = {
-                    url: '#/shared/' + gameData,
+                    url: '#/s/1/' + gameData,
                     files: [
                         new File([blob], 'stand.png', {
                             type: blob.type,

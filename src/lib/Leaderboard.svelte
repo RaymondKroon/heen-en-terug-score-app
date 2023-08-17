@@ -55,8 +55,7 @@
         color: red;
     }
 
-    .arrow-stack {
-    }
+    .arrow-stack {}
 
     .arrow {
         font-size: 100%;
@@ -72,9 +71,11 @@
                 {entry.options.text}
             {:else if entry.options.standingsDiff !== undefined}
                 {#if (entry.options.standingsDiff > 0)}
+                    <div class="arrow-stack">
                     {#each {length: entry.options.standingsDiff} as _, i}
                         <span class="material-icons arrow up" style="transform: translateY({arrow_offsets[i] * factor}px);">keyboard_arrow_up</span>
                     {/each}
+                    </div>
                 {:else if (entry.options.standingsDiff < 0)}
                     <div class="arrow-stack">
                         {#each {length: -entry.options.standingsDiff} as _, i}

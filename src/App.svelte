@@ -66,8 +66,8 @@
         else if (path.startsWith('/stats')) {
             page = Stats;
         }
-        else if (path.startsWith('/shared')) {
-            let data = path.slice(8);
+        else if (path.startsWith('/s/1')) {
+            let data = path.slice(5);
             page = Shared;
             props = {data};
         }

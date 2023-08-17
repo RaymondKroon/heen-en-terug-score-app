@@ -10,8 +10,9 @@
   },
   "dependencies": {
     "html-to-image": "^1.11.11",
+    "js-base64": "^3.7.5",
     "pako": "^2.1.0",
-    "js-base64": "^3.7.5"
+    "protobufjs": "~7.2.4"
   },
   "devDependencies": {
     "@sveltejs/vite-plugin-svelte": "^2.0.3",
