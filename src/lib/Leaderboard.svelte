@@ -3,7 +3,7 @@
     export let entries = [];
     export let zoom = false;
     $: factor = zoom ? 2:  1;
-    const arrow_offsets = [-10, -5, -1, -15];
+    const arrow_offsets = [-9, -5, -1, -13];
 
 </script>
 
@@ -39,8 +39,7 @@
 
     .entry-options {
         /*flex-grow: 1;*/
-        flex-basis: 5%;
-        font-size: 1em;
+        flex-basis: calc( var(--factor) * 15px);
     }
 
     .zoom {
@@ -63,7 +62,7 @@
     }
 </style>
 
-<div on:click={() => zoom = !zoom} class="leaderboard">
+<div on:click={() => zoom = !zoom} class="leaderboard" style="--factor:{factor};">
     {#each entries as entry}
         <div class:zoom={zoom} class="entry">
             <div class="entry-options">
@@ -73,13 +72,13 @@
                 {#if (entry.options.standingsDiff > 0)}
                     <div class="arrow-stack">
                     {#each {length: entry.options.standingsDiff} as _, i}
-                        <span class="material-icons arrow up" style="transform: translateY({arrow_offsets[i] * factor}px);">keyboard_arrow_up</span>
+                        <span class="material-icons-outlined arrow up" style="transform: translateX(-25%) translateY({arrow_offsets[i] * factor}px);">keyboard_arrow_up</span>
                     {/each}
                     </div>
                 {:else if (entry.options.standingsDiff < 0)}
                     <div class="arrow-stack">
                         {#each {length: -entry.options.standingsDiff} as _, i}
-                        <span class="material-icons arrow down" style="transform: translateY({arrow_offsets[i] * factor}px);">keyboard_arrow_down</span>
+                        <span class="material-icons-outlined arrow down" style="transform: translateX(-25%) translateY({arrow_offsets[i] * factor}px);">keyboard_arrow_down</span>
                         {/each}
                     </div>
                 {:else}

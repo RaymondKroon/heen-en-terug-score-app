@@ -1,7 +1,7 @@
 <script>
     export let suit;
-    export let size="1";
-    let fontSize = size + "em";
+    export let size=1;
+    let fontSize = size;
     let height = size * 14 + "px";
 </script>
 
@@ -39,7 +39,7 @@
     }
 </style>
 
-<div class="trump" style="font-size: {fontSize}; height: {height}">
+<div class="trump" style="font-size: {fontSize}em; height: {height}">
     {#if suit === 'heart'}
         <div class="heart" >&hearts;</div>
     {:else if suit === 'spade'}
@@ -49,6 +49,6 @@
     {:else if suit === 'diamond'}
         <div class="diamond" >&diams;</div>
     {:else}
-        <div class="none" style="font-size: {size*3}px">geen troef</div>
+        <span class="material-icons-outlined none" style="font-size: {fontSize * 12}px">disabled_by_default</span>
     {/if}
 </div>
