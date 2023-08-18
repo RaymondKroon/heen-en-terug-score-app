@@ -1,6 +1,7 @@
 <script>
     import { onMount } from 'svelte';
     import { addGame, addPlayer, addRound, gameExists } from './store.js';
+    import { TRUMPS } from './lib.js';
     let players = [];
 
     onMount(async () => {
@@ -48,7 +49,7 @@
 
 
     function random_trump() {
-        let trumps = ['heart', 'diamond', 'spade', 'club', 'none'];
+        let trumps = Object.values(TRUMPS);
         return trumps[Math.floor(Math.random() * trumps.length)];
     }
 </script>

@@ -2,9 +2,10 @@ import {get, writable} from 'svelte/store';
 import {deflate, gzip, inflate} from "pako";
 import { Base64 } from 'js-base64';
 import protobuf from 'protobufjs';
+import {migrateTrumps} from "./migrations.js";
 
 const localStorageKey = 'heen-en-weer-store';
-const GAME_VERSION = 1;
+const GAME_VERSION = 2;
 
 const initialPlayer = {
     id: 0,
@@ -19,7 +20,7 @@ const initialPlayer = {
 
 const initialRound = {
     nCards: 0,
-    trump: '',
+    trump: 0,
     bids: [],
     tricks: [],
     dealer_id: 0,
@@ -87,20 +88,23 @@ export function getGame(gameId) {
     let game = _getGameFromId(store, gameId)
     if (game.gameVersion === undefined || game.gameVersion < GAME_VERSION) {
         game.gameVersion = GAME_VERSION;
-        calculateScores(gameId);
-        game = _getGameFromId(store, gameId)
+        calculateScoresForGame(game);
+        migrateTrumps(game)
+        saveGame(gameId, game);
     }
     //clone the game object to prevent mutation
     return JSON.parse(JSON.stringify(game));
 }
 
-export function shareGame(gameId) {
-    let game = getGame(gameId);
-    let deflated = deflate(JSON.stringify(game));
-    return Base64.fromUint8Array(deflated, true);
+export function saveGame(id, game) {
+    gameStore.update(store => {
+        const index = store.games.findIndex(game => game.id === id);
+        store.games[index] = game;
+        return store;
+    });
 }
 
-export async function shareGameV2(gameId) {
+export async function shareGame(gameId) {
     let game = getGame(gameId);
 
     let root = await protobuf.load("./game.proto");
@@ -137,13 +141,7 @@ export function importGame(game) {
     return game.id;
 }
 
-export function loadGame(encodedGame) {
-    let deflated = Base64.toUint8Array(encodedGame);
-    let inflated = inflate(deflated, {to: 'string'});
-    return JSON.parse(inflated);
-}
-
-export async function loadGameV2(encodedGame) {
+export async function loadGame(encodedGame) {
     let deflated = Base64.toUint8Array(encodedGame);
     let inflated = inflate(deflated);
     let root = await protobuf.load("./game.proto");
@@ -165,6 +163,7 @@ export async function loadGameV2(encodedGame) {
         let round = {...initialRound}
         round.dealer_id = dealer;
         round.nCards = cards;
+        console.log(protoGame.rounds[i])
         round.trump = protoGame.rounds[i].trump;
         round.bids = protoGame.rounds[i].bids;
         round.tricks = protoGame.rounds[i].tricks;
@@ -172,6 +171,7 @@ export async function loadGameV2(encodedGame) {
     });
 
     calculateScoresForGame(game);
+
 
     return game;
 }

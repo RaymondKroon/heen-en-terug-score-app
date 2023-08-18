@@ -1,7 +1,8 @@
 <script>
-    import {getStandingsForGame, loadGameV2, importGame as _importGame} from "./store.js";
+    import {getStandingsForGame, loadGame, importGame as _importGame} from "./store.js";
     import Leaderboard from "./Leaderboard.svelte";
     import { onMount } from 'svelte';
+    import {TRUMPS_SHORT} from "./lib.js";
 
     export let data;
 
@@ -10,16 +11,8 @@
     let game;
     let players = [];
 
-    const trump_render = {
-        'heart': 'H',
-        'spade': 'S',
-        'diamond': 'R',
-        'club': 'K',
-        'none': '-'
-    }
-
     onMount(async () => {
-        game = await loadGameV2(data);
+        game = await loadGame(data);
         players = game.players;
     });
 
@@ -102,7 +95,7 @@
         {#each game.rounds as round, i}
             <tr class="row round">
                 <td class="ncards">{round.nCards}</td>
-                <td class="trump">{trump_render[round.trump]}</td>
+                <td class="trump">{TRUMPS_SHORT[round.trump]}</td>
 
                 {#each players as player, i}
                     <td class="bid player">

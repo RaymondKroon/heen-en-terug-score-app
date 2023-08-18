@@ -1,8 +1,11 @@
 <script>
+    import {TRUMPS} from "./lib.js";
+
     export let suit;
     export let size=1;
     let fontSize = size;
     let height = size * 14 + "px";
+
 </script>
 
 <style>
@@ -40,13 +43,13 @@
 </style>
 
 <div class="trump" style="font-size: {fontSize}em; height: {height}">
-    {#if suit === 'heart'}
+    {#if suit === TRUMPS.HEARTS}
         <div class="heart" >&hearts;</div>
-    {:else if suit === 'spade'}
+    {:else if suit === TRUMPS.SPADES}
         <div class="spade">&spades;</div>
-    {:else if suit === 'club'}
+    {:else if suit === TRUMPS.CLUBS}
         <div class="club">&clubs;</div>
-    {:else if suit === 'diamond'}
+    {:else if suit === TRUMPS.DIAMONDS}
         <div class="diamond" >&diams;</div>
     {:else}
         <span class="material-icons-outlined none" style="font-size: {fontSize * 12}px">disabled_by_default</span>

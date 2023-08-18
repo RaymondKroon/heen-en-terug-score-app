@@ -1,18 +1,11 @@
 <script>
-    import {currentRoundId as _currentRoundId, getGame, getStandings, listPlayers, shareGame, shareGameV2} from './store.js';
+    import {currentRoundId as _currentRoundId, getGame, getStandings, listPlayers, shareGame} from './store.js';
+    import {TRUMPS_SHORT} from "./lib.js";
     import Leaderboard from "./Leaderboard.svelte";
     import Trump from "./Trump.svelte";
     import { toBlob } from 'html-to-image';
 
     export let id;
-
-    const trump_render = {
-        'heart': 'H',
-        'spade': 'S',
-        'diamond': 'R',
-        'club': 'K',
-        'none': '-'
-    }
 
     let players = listPlayers(id);
     let currentRoundId = _currentRoundId(id);
@@ -54,7 +47,7 @@
             let blob = await toBlob(node, {filter: filter, backgroundColor: bgColor})
 
             if (navigator.canShare) {
-                let gameData = await shareGameV2(id);
+                let gameData = await shareGame(id);
                 const data = {
                     url: '#/s/1/' + gameData,
                     files: [
@@ -220,7 +213,7 @@
         {#each game as round, i}
             <tr class="row round {i === currentRoundId ? 'active' : ''}">
                 <td class="ncards">{round.nCards}</td>
-                <td class="trump">{trump_render[round.trump]}</td>
+                <td class="trump">{TRUMPS_SHORT[round.trump]}</td>
 
                 {#each players as player, i}
                     <td class="bid player">

@@ -4,8 +4,16 @@ message Player {
   string name = 1;
 }
 
+enum Trump {
+  SPADES = 0;
+  HEARTS = 1;
+  CLUBS = 2;
+  DIAMONDS = 3;
+  NO_TRUMP = 4;
+}
+
 message Round {
-  string trump = 1;
+  Trump trump = 1;
   repeated uint32 bids = 2;
   repeated uint32 tricks = 3;
 }

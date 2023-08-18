@@ -9,3 +9,19 @@ export class LeaderboardEntry {
         }
     }
 }
+
+export const TRUMPS = {
+    SPADES: 0,
+    HEARTS: 1,
+    CLUBS: 2,
+    DIAMONDS: 3,
+    NO_TRUMP: 4,
+}
+
+export const TRUMPS_SHORT = {
+    0: 'S',
+    1: 'H',
+    2: 'K',
+    3: 'R',
+    4: '-',
+}
