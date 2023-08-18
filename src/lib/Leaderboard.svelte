@@ -3,7 +3,7 @@
     export let entries = [];
     export let zoom = false;
     $: factor = zoom ? 2:  1;
-    const arrow_offsets = [-9, -5, -1, -13];
+    $: arrow_offsets =  zoom ? [-9, -13, -5, -17] : [-7, -11, -3, -15];
 
 </script>
 
