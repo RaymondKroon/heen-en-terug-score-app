@@ -14,9 +14,9 @@
 
     function playerOptions(p) {
         if (p.id === starter_id)
-            return {text: 's'}
+            return {role: 's'}
         else if (p.id === _round.dealer_id) {
-            return {text: 'd'};
+            return {role: 'd'};
         } else {
             return {};
         }

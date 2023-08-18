@@ -24,6 +24,16 @@
         }
     }
 
+    function playerLabel(p) {
+        if (p.id === starter_id)
+            return "<span class=\"material-icons-outlined role\">play_arrow</span>"
+        else if (p.id === _round.dealer_id) {
+            return "<span class=\"material-icons-outlined role\">shuffle</span>"
+        } else {
+            return "";
+        }
+    }
+
     function save() {
         updatePlayerBids(id, round, bids)
         location.href = `#/play/${id}/${round}`;
@@ -42,6 +52,10 @@
         flex: 1;
         padding-right: 5px;
     }
+
+    :global(span.role) {
+        font-size: 100%;
+    }
 </style>
 
 <h1>Bieden ronde {round + 1} ({_round.nCards})</h1>
@@ -50,7 +64,7 @@
 <h2>Spelers</h2>
 {#each players as player, i}
     <div class="player-input">
-        <div class="name">{playerName(player)}</div>
+        <div class="name">{player.name} {@html playerLabel(player)}</div>
         <NumberInput max={maxBid} bind:value={bids[i]} ></NumberInput>
     </div>
 {/each}

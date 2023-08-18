@@ -60,6 +60,11 @@
         font-size: 100%;
         position: absolute;
     }
+
+    .role {
+        font-size: calc( var(--factor) * 15px);
+        transform: translateX(-15%);
+    }
 </style>
 
 <div on:click={() => zoom = !zoom} class="leaderboard" style="--factor:{factor};">
@@ -68,6 +73,12 @@
             <div class="entry-options">
             {#if entry.options.text}
                 {entry.options.text}
+            {:else if entry.options.role}
+                {#if (entry.options.role === 'd')}
+                    <span class="material-icons-outlined role">shuffle</span>
+                {:else if (entry.options.role === 's')}
+                    <span class="material-icons-outlined role">play_arrow</span>
+                {/if}
             {:else if entry.options.standingsDiff !== undefined}
                 {#if (entry.options.standingsDiff > 0)}
                     <div class="arrow-stack">
