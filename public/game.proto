@@ -14,8 +14,7 @@ enum Trump {
 
 message Round {
   Trump trump = 1;
-  repeated uint32 bids = 2;
-  repeated uint32 tricks = 3;
+  repeated uint32 bids_tricks = 2;
 }
 
 message Game {
@@ -23,4 +22,5 @@ message Game {
   repeated Player players = 2;
   repeated Round rounds = 3;
   uint32 start_dealer = 4;
+  uint32 current_round = 5;
 }

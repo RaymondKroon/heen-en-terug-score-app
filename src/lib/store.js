@@ -23,7 +23,7 @@ const initialRound = {
     trump: 0,
     bids: [],
     tricks: [],
-    dealer_id: 0,
+    dealer_id: 0,  // wrong.... should be dealerId
 }
 
 function initialGame(id, name) {
@@ -111,19 +111,30 @@ export async function shareGame(gameId) {
     let Game = root.lookupType("Game");
 
     let players = game.players.map(p => ({name: p.name}));
-    let rounds = game.rounds.map(r => ({trump: r.trump, bids: r.bids, tricks: r.tricks }))
+    let rounds = game.rounds.map(r => {
+        let bidsTricks = r.bids.map((b, i) => {
+            let v = b << 4;
+            if (r.tricks[i] !== undefined) {
+                v |= r.tricks[i];
+            }
+            return v;
+        })
+        return {trump: r.trump, bidsTricks}
+    })
     let payload = {
         name: game.name,
         players: players,
         rounds: rounds,
-        start_dealer: game.rounds[0].dealer_id,
+        startDealer: game.rounds[0].dealer_id,
+        currentRound: currentRoundForGame(game)
     }
+
     let err = Game.verify(payload);
     let message = Game.create(payload);
 
     let buffer = Game.encode(message).finish();
     buffer = deflate(buffer, {level: 9});
-    return Base64.fromUint8Array(buffer, false);
+    return Base64.fromUint8Array(buffer, true);
 }
 
 export function importGame(game) {
@@ -148,7 +159,6 @@ export async function loadGame(encodedGame) {
     let Game = root.lookupType("Game");
     let message = Game.decode(inflated);
     let protoGame = Game.toObject(message, {defaults: true});
-
     let name = protoGame.name;
     let id = Date.now();
 
@@ -156,17 +166,23 @@ export async function loadGame(encodedGame) {
     game.players = protoGame.players.map((p, i) => ({id: i, name: p.name}));
 
     let cardsPerRound = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    let dealer = protoGame.start_dealer;
+    let dealer = protoGame.startDealer;
     let nPlayers = game.players.length;
     game.rounds = cardsPerRound.map((cards, i) => {
-        dealer = (dealer + 1) % nPlayers;
         let round = {...initialRound}
         round.dealer_id = dealer;
         round.nCards = cards;
-        console.log(protoGame.rounds[i])
         round.trump = protoGame.rounds[i].trump;
-        round.bids = protoGame.rounds[i].bids;
-        round.tricks = protoGame.rounds[i].tricks;
+        round.bids = [];
+        if (i <= protoGame.currentRound) {
+            round.bids = protoGame.rounds[i].bidsTricks.map(v => v >> 4);
+        }
+        round.tricks = [];
+        if (i < protoGame.currentRound) {
+            round.tricks = protoGame.rounds[i].bidsTricks.map(v => v & 0b1111);
+        }
+
+        dealer = (dealer + 1) % nPlayers;
         return round;
     });
 
@@ -328,7 +344,12 @@ function _getGameFromId(store, id) {
 }
 
 export function currentRoundId(gameId) {
-    let rounds = getGame(gameId).rounds;
+    let game = getGame(gameId);
+    return currentRoundForGame(game);
+}
+
+export function currentRoundForGame(game) {
+    let rounds = game.rounds;
     let result = rounds.findIndex(round => round.tricks.length === 0)
     return result >= 0 ? result : rounds.length;
 }
