@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+message Player {
+  string name = 1;
+}
+
+enum Trump {
+  SPADES = 0;
+  HEARTS = 1;
+  CLUBS = 2;
+  DIAMONDS = 3;
+  NO_TRUMP = 4;
+}
+
+message Round {
+  Trump trump = 1;
+  repeated uint32 bids_tricks = 2;
+}
+
+message Game {
+  string name = 1;
+  repeated Player players = 2;
+  repeated Round rounds = 3;
+  uint32 start_dealer = 4;
+  uint32 current_round = 5;
+}
