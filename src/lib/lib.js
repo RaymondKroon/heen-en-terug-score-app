@@ -216,26 +216,33 @@ export async function gameToProto(game) {
 
     let playerBids = game.rounds.slice(0, currentRound+1).reduce((acc, round) => {
         for (let i = 0; i < numPlayers; i++) {
-            let playerBids = acc[i];
-            if (playerBids === undefined) {
-                playerBids = [];
+            let bids = acc[i];
+            if (bids === undefined) {
+                bids = [];
             }
-            playerBids.push(round.bids[i]);
-            acc[i] = playerBids;
+            if (round.bids[i] !== undefined) {
+                bids.push(round.bids[i]);
+            }
+
+            acc[i] = bids;
         }
         return acc;
     }, {});
-
+    console.log(playerBids);
     playerBids = Object.values(playerBids).map(bids => BigIntToLong(playerBidsToInt64(bids)));
 
     let playerTricks = game.rounds.slice(0, currentRound).reduce((acc, round) => {
         for (let i = 0; i < numPlayers; i++) {
-            let playerScores = acc[i];
-            if (playerScores === undefined) {
-                playerScores = [];
+            let tricks = acc[i];
+            if (tricks === undefined) {
+                tricks = [];
             }
-            playerScores.push(round.tricks[i]);
-            acc[i] = playerScores;
+
+            if (round.tricks[i] !== undefined) {
+                tricks.push(round.tricks[i]);
+            }
+
+            acc[i] = tricks;
         }
         return acc;
     }, {});
