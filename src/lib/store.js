@@ -1,11 +1,11 @@
 import {get, writable} from 'svelte/store';
-import {deflate, gzip, inflate} from "pako";
-import { Base64 } from 'js-base64';
+import {deflate, inflate} from "pako";
+import {Base64} from 'js-base64';
 import protobuf from 'protobufjs';
 import {migrateTrumps} from "./migrations.js";
+import {calculateScoresForGame, currentRoundForGame, gameToProto, initialGame, initialRound, protoToGame, GAME_VERSION} from "./lib.js";
 
 const localStorageKey = 'heen-en-weer-store';
-const GAME_VERSION = 2;
 
 const initialPlayer = {
     id: 0,
@@ -16,24 +16,6 @@ const initialPlayer = {
     highestRoundTricks: 0,
     leaderBoardPosition: 0,
     previousLeaderBoardPosition: undefined,
-}
-
-const initialRound = {
-    nCards: 0,
-    trump: 0,
-    bids: [],
-    tricks: [],
-    dealer_id: 0,  // wrong.... should be dealerId
-}
-
-function initialGame(id, name) {
-    return {
-        gameVersion: GAME_VERSION,
-        id: id,
-        name: name,
-        players: [],
-        rounds: [],
-    };
 }
 
 // Initial store state
@@ -104,37 +86,11 @@ export function saveGame(id, game) {
     });
 }
 
-export async function shareGame(gameId) {
+export async function shareGameV2(gameId) {
     let game = getGame(gameId);
-
-    let root = await protobuf.load("./game.proto");
-    let Game = root.lookupType("Game");
-
-    let players = game.players.map(p => ({name: p.name}));
-    let rounds = game.rounds.map(r => {
-        let bidsTricks = r.bids.map((b, i) => {
-            let v = b << 4;
-            if (r.tricks[i] !== undefined) {
-                v |= r.tricks[i];
-            }
-            return v;
-        })
-        return {trump: r.trump, bidsTricks}
-    })
-    let payload = {
-        name: game.name,
-        players: players,
-        rounds: rounds,
-        startDealer: game.rounds[0].dealer_id,
-        currentRound: currentRoundForGame(game)
-    }
-
-    let err = Game.verify(payload);
-    let message = Game.create(payload);
-
-    let buffer = Game.encode(message).finish();
-    buffer = deflate(buffer, {level: 9});
-    return Base64.fromUint8Array(buffer, true);
+    let proto = await gameToProto(game);
+    proto = deflate(proto, {level: 9});
+    return Base64.fromUint8Array(proto, true);
 }
 
 export function importGame(game) {
@@ -152,44 +108,10 @@ export function importGame(game) {
     return game.id;
 }
 
-export async function loadGame(encodedGame) {
+export async function loadGameV2(encodedGame) {
     let deflated = Base64.toUint8Array(encodedGame);
     let inflated = inflate(deflated);
-    let root = await protobuf.load("./game.proto");
-    let Game = root.lookupType("Game");
-    let message = Game.decode(inflated);
-    let protoGame = Game.toObject(message, {defaults: true});
-    let name = protoGame.name;
-    let id = Date.now();
-
-    let game = initialGame(id, name)
-    game.players = protoGame.players.map((p, i) => ({id: i, name: p.name}));
-
-    let cardsPerRound = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    let dealer = protoGame.startDealer;
-    let nPlayers = game.players.length;
-    game.rounds = cardsPerRound.map((cards, i) => {
-        let round = {...initialRound}
-        round.dealer_id = dealer;
-        round.nCards = cards;
-        round.trump = protoGame.rounds[i].trump;
-        round.bids = [];
-        if (i <= protoGame.currentRound) {
-            round.bids = protoGame.rounds[i].bidsTricks.map(v => v >> 4);
-        }
-        round.tricks = [];
-        if (i < protoGame.currentRound) {
-            round.tricks = protoGame.rounds[i].bidsTricks.map(v => v & 0b1111);
-        }
-
-        dealer = (dealer + 1) % nPlayers;
-        return round;
-    });
-
-    calculateScoresForGame(game);
-
-
-    return game;
+    return await protoToGame(inflated);
 }
 
 // Add a player to a specific game
@@ -246,56 +168,6 @@ export function updatePlayerTricks(gameId, roundId, tricks) {
     });
 }
 
-function calculateScoresForGame(game) {
-    game.players.forEach(player => {
-        player.score = 0;
-        player.highestRoundScore = 0;
-        player.nCorrectBids = 0;
-        player.highestRoundTricks = 0;
-        player.leaderBoardPosition = player.id + 1;
-        player.previousLeaderBoardPosition = undefined;
-    });
-
-    game.rounds.forEach(round => {
-        if (!round.totalScore) {
-            round.totalScore = Array(game.players.length).fill(0);
-        }
-
-        if (round.bids && round.bids.length > 0 && round.tricks && round.tricks.length > 0) {
-            game.players.forEach(player => {
-                const bid = round.bids[player.id];
-                const tricks = round.tricks[player.id];
-                let score = player.score;
-
-                let roundScore = 0;
-
-                if (bid === tricks) {
-                    roundScore = 5 + bid;
-                    player.nCorrectBids = player.nCorrectBids + 1;
-                } else {
-                    roundScore = tricks;
-                }
-                score += roundScore;
-
-                round.totalScore[player.id] = score;
-                if (roundScore > player.highestRoundScore) {
-                    player.highestRoundScore = roundScore;
-                }
-                if (tricks > player.highestRoundTricks) {
-                    player.highestRoundTricks = tricks;
-                }
-
-                player.score = score;
-            });
-            let standings = [...game.players].sort(comparePlayerScore);
-            standings.forEach((player, index) => {
-                player.previousLeaderBoardPosition = player.leaderBoardPosition;
-                player.leaderBoardPosition = index + 1;
-            });
-        }
-    });
-}
-
 export function calculateScores(id) {
     gameStore.update(store => {
         let game = _getGameFromId(store, id);
@@ -309,18 +181,6 @@ export function calculateScores(id) {
 export function getStandings(gameId) {
     let game = getGame(gameId);
     return getStandingsForGame(game);
-}
-
-function comparePlayerScore(a, b) {
-    if (a.score !== b.score) {
-        return b.score - a.score;
-    } else if (a.nCorrectBids !== b.nCorrectBids) {
-        return b.nCorrectBids - a.nCorrectBids;
-    } else if (a.highestRoundTricks !== b.highestRoundTricks) {
-        return b.highestRoundTricks - a.highestRoundTricks;
-    } else {
-        return b.highestRoundScore - a.highestRoundScore;
-    }
 }
 
 export function getStandingsForGame(game) {
@@ -346,12 +206,6 @@ function _getGameFromId(store, id) {
 export function currentRoundId(gameId) {
     let game = getGame(gameId);
     return currentRoundForGame(game);
-}
-
-export function currentRoundForGame(game) {
-    let rounds = game.rounds;
-    let result = rounds.findIndex(round => round.tricks.length === 0)
-    return result >= 0 ? result : rounds.length;
 }
 
 export function getTotals() {

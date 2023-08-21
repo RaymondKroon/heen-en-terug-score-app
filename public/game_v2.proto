@@ -12,15 +12,12 @@ enum Trump {
   NO_TRUMP = 4;
 }
 
-message Round {
-  Trump trump = 1;
-  repeated uint32 bids_tricks = 2;
-}
-
 message Game {
   string name = 1;
   repeated Player players = 2;
-  repeated Round rounds = 3;
-  uint32 start_dealer = 4;
-  uint32 current_round = 5;
+  fixed64 trumps = 3;
+  repeated fixed64 player_bids = 4;
+  repeated fixed64 player_tricks = 5;
+  uint32 start_dealer = 6;
+  uint32 current_round = 7;
 }
