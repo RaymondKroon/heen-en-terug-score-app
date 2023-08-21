@@ -86,39 +86,6 @@ export function saveGame(id, game) {
     });
 }
 
-export async function shareGame(gameId) {
-    let game = getGame(gameId);
-
-    let root = await protobuf.load("./game.proto");
-    let Game = root.lookupType("Game");
-
-    let players = game.players.map(p => ({name: p.name}));
-    let rounds = game.rounds.map(r => {
-        let bidsTricks = r.bids.map((b, i) => {
-            let v = b << 4;
-            if (r.tricks[i] !== undefined) {
-                v |= r.tricks[i];
-            }
-            return v;
-        })
-        return {trump: r.trump, bidsTricks}
-    })
-    let payload = {
-        name: game.name,
-        players: players,
-        rounds: rounds,
-        startDealer: game.rounds[0].dealer_id,
-        currentRound: currentRoundForGame(game)
-    }
-
-    let err = Game.verify(payload);
-    let message = Game.create(payload);
-
-    let buffer = Game.encode(message).finish();
-    buffer = deflate(buffer, {level: 9});
-    return Base64.fromUint8Array(buffer, true);
-}
-
 export async function shareGameV2(gameId) {
     let game = getGame(gameId);
     let proto = await gameToProto(game);
@@ -139,46 +106,6 @@ export function importGame(game) {
     });
 
     return game.id;
-}
-
-export async function loadGame(encodedGame) {
-    let deflated = Base64.toUint8Array(encodedGame);
-    let inflated = inflate(deflated);
-    let root = await protobuf.load("./game.proto");
-    let Game = root.lookupType("Game");
-    let message = Game.decode(inflated);
-    let protoGame = Game.toObject(message, {defaults: true});
-    let name = protoGame.name;
-    let id = Date.now();
-
-    let game = initialGame(id, name)
-    game.players = protoGame.players.map((p, i) => ({id: i, name: p.name}));
-
-    let cardsPerRound = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
-    let dealer = protoGame.startDealer;
-    let nPlayers = game.players.length;
-    game.rounds = cardsPerRound.map((cards, i) => {
-        let round = {...initialRound}
-        round.dealer_id = dealer;
-        round.nCards = cards;
-        round.trump = protoGame.rounds[i].trump;
-        round.bids = [];
-        if (i <= protoGame.currentRound) {
-            round.bids = protoGame.rounds[i].bidsTricks.map(v => v >> 4);
-        }
-        round.tricks = [];
-        if (i < protoGame.currentRound) {
-            round.tricks = protoGame.rounds[i].bidsTricks.map(v => v & 0b1111);
-        }
-
-        dealer = (dealer + 1) % nPlayers;
-        return round;
-    });
-
-    calculateScoresForGame(game);
-
-
-    return game;
 }
 
 export async function loadGameV2(encodedGame) {
