@@ -1,3 +1,4 @@
+<svelte:options accessors />
 <script>
     // array of LeaderboardEntry
     export let entries = [];
@@ -22,7 +23,7 @@
         font-family: sans-serif;
 
         /*border-radius: 10px;*/
-        padding: 0px 15px 0px 10px;
+        padding: 0 15px 0 10px;
         /*margin-bottom: 10px;*/
         align-items: center;
     }

@@ -72,7 +72,7 @@ export function calculateScoresForGame(game) {
                 const tricks = round.tricks[player.id];
                 let score = player.score;
 
-                let roundScore = 0;
+                let roundScore;
 
                 if (bid === tricks) {
                     roundScore = 5 + bid;
@@ -228,7 +228,6 @@ export async function gameToProto(game) {
         }
         return acc;
     }, {});
-    console.log(playerBids);
     playerBids = Object.values(playerBids).map(bids => BigIntToLong(playerBidsToInt64(bids)));
 
     let playerTricks = game.rounds.slice(0, currentRound).reduce((acc, round) => {
@@ -283,7 +282,6 @@ export async function protoToGame(proto) {
     let cardsPerRound = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
     let dealer = protoGame.startDealer;
     let nPlayers = game.players.length;
-    let currentRound = protoGame.currentRound;
     let trumps = int64ToIntNArray(3, LongToBigInt(protoGame.trumps), cardsPerRound.length);
 
     let playerBids = protoGame.playerBids.reduce((acc, bids, idx) => {

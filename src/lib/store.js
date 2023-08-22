@@ -159,7 +159,7 @@ export function updatePlayerBids(gameId, roundId, bids) {
 export function updatePlayerTricks(gameId, roundId, tricks) {
     gameStore.update(store => {
         let game = _getGameFromId(store, gameId);
-        let tricksArray = game.rounds[roundId].tricks = tricks;
+        game.rounds[roundId].tricks = tricks;
         return store;
     });
 }

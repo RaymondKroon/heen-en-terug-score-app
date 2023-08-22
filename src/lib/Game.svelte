@@ -7,6 +7,8 @@
 
     export let id;
 
+    let leaderboard;
+
     let players = listPlayers(id);
     let currentRoundId = _currentRoundId(id);
     let currentRound = getGame(id).rounds[currentRoundId];
@@ -28,16 +30,14 @@
 
     async function exportStandings() {
 
+        leaderboard.zoom = false;
+
         function filter(node) {
             if (node.tagName && node.tagName.toLowerCase() === 'a') {
                 return false;
             }
 
-            if (node.classList && node.classList.contains('entry-options')) {
-                return false;
-            }
-
-            return true;
+            return !(node.classList && node.classList.contains('entry-options'));
         }
 
         let node = document.getElementById('standings');
@@ -63,8 +63,6 @@
                         if (err.name !== 'AbortError') {
                             console.error(err.name, err.message);
                         }
-                    } finally {
-                        return;
                     }
                 }
             } else {
@@ -179,7 +177,7 @@
     <div id="standings">
         <h1>Stand <a href="#/list">↑</a>
             <a href="#" on:click|preventDefault={exportStandings}><span class="material-icons-outlined">share</span></a></h1>
-        <Leaderboard zoom={true} entries={getStandings(id)}/>
+        <Leaderboard bind:this={leaderboard} zoom={true} entries={getStandings(id)}/>
     </div>
 
     {#if currentRound}
@@ -238,8 +236,9 @@
                         {/if}
                     </td>
                 {/each}
+                <!-- svelte-ignore a11y-click-events-have-key-events -->
                 <td>
-                    {#if i == currentRoundId}
+                    {#if i === currentRoundId}
                         <div class="goto-icon" on:click={_ => playRound(i)}>▶</div>
                     {:else if i < currentRoundId}
                         <div class="goto-icon" on:click={_ => editRound(i)}>✎</div>
