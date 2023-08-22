@@ -84,7 +84,7 @@ export function saveGame(id, game) {
     });
 }
 
-export async function shareGameV2(gameId) {
+export async function shareGame(gameId) {
     let game = getGame(gameId);
     let proto = await gameToProto(game);
     return Base64.fromUint8Array(proto, true);
@@ -105,7 +105,7 @@ export function importGame(game) {
     return game.id;
 }
 
-export async function loadGameV2(encodedGame) {
+export async function loadGame(encodedGame) {
     let proto = Base64.toUint8Array(encodedGame);
     return await protoToGame(proto);
 }

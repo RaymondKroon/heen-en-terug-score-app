@@ -205,7 +205,7 @@ function BigIntToLong(bigInt) {
 }
 
 export async function gameToProto(game) {
-    let root = await protobuf.load("./game_v2.proto");
+    let root = await protobuf.load("./game.proto");
     let Game = root.lookupType("Game");
 
     let players = game.players.map(p => ({name: p.name}));
@@ -270,7 +270,7 @@ export async function protoToGame(proto) {
     protobuf.util.Long = Long;
     protobuf.configure();
 
-    let root = await protobuf.load("./game_v2.proto");
+    let root = await protobuf.load("./game.proto");
     let Game = root.lookupType("Game");
     let message = Game.decode(proto);
     let protoGame = Game.toObject(message, {defaults: true});

@@ -1,5 +1,5 @@
 <script>
-    import {getStandingsForGame, loadGameV2 as loadGame, importGame as _importGame} from "./store.js";
+    import {getStandingsForGame, loadGame, importGame as _importGame} from "./store.js";
     import Leaderboard from "./Leaderboard.svelte";
     import { onMount } from 'svelte';
     import {TRUMPS_SHORT} from "./lib.js";

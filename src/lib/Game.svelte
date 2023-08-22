@@ -1,5 +1,5 @@
 <script>
-    import {currentRoundId as _currentRoundId, getGame, getStandings, listPlayers, shareGameV2 as shareGame} from './store.js';
+    import {currentRoundId as _currentRoundId, getGame, getStandings, listPlayers, shareGame} from './store.js';
     import {TRUMPS_SHORT} from "./lib.js";
     import Leaderboard from "./Leaderboard.svelte";
     import Trump from "./Trump.svelte";
