@@ -1,7 +1,5 @@
 import {get, writable} from 'svelte/store';
-import {deflate, inflate} from "pako";
 import {Base64} from 'js-base64';
-import protobuf from 'protobufjs';
 import {migrateTrumps} from "./migrations.js";
 import {calculateScoresForGame, currentRoundForGame, gameToProto, initialGame, initialRound, protoToGame, GAME_VERSION} from "./lib.js";
 
@@ -89,7 +87,6 @@ export function saveGame(id, game) {
 export async function shareGameV2(gameId) {
     let game = getGame(gameId);
     let proto = await gameToProto(game);
-    proto = deflate(proto, {level: 9});
     return Base64.fromUint8Array(proto, true);
 }
 
@@ -109,9 +106,8 @@ export function importGame(game) {
 }
 
 export async function loadGameV2(encodedGame) {
-    let deflated = Base64.toUint8Array(encodedGame);
-    let inflated = inflate(deflated);
-    return await protoToGame(inflated);
+    let proto = Base64.toUint8Array(encodedGame);
+    return await protoToGame(proto);
 }
 
 // Add a player to a specific game
