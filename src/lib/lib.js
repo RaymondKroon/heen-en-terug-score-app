@@ -1,7 +1,7 @@
 import protobuf from "protobufjs";
 import Long from "long";
 
-export const GAME_VERSION = 2;
+export const GAME_VERSION = 3;
 
 export function initialGame(id, name) {
     return {
@@ -18,7 +18,7 @@ export const initialRound = {
     trump: 0,
     bids: [],
     tricks: [],
-    dealer_id: 0,  // wrong.... should be dealerId
+    dealerId: 0,
 }
 
 export class LeaderboardEntry {
@@ -254,7 +254,7 @@ export async function gameToProto(game) {
         trumps: BigIntToLong(trumps.wrapper),
         playerBids,
         playerTricks,
-        startDealer: game.rounds[0].dealer_id,
+        startDealer: game.rounds[0].dealerId,
         currentRound: currentRoundForGame(game)
     }
 
@@ -296,7 +296,7 @@ export async function protoToGame(proto) {
 
     game.rounds = cardsPerRound.map((cards, roundIdx) => {
         let round = {...initialRound}
-        round.dealer_id = dealer;
+        round.dealerId = dealer;
         round.nCards = cards;
         round.trump = trumps[roundIdx];
         round.bids = [];

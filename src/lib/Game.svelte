@@ -14,7 +14,7 @@
     let currentRound = getGame(id).rounds[currentRoundId];
 
     let game = getGame(id).rounds;
-    let dealer = currentRound ? players[currentRound.dealer_id] : undefined;
+    let dealer = currentRound ? players[currentRound.dealerId] : undefined;
 
     function playRound(i) {
         if (currentRound.bids && currentRound.bids.length > 0) {

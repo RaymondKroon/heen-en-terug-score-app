@@ -12,12 +12,12 @@
 
     const bids = Array(players.length).fill(0);
 
-    let starter_id = _round.dealer_id !== undefined ? (_round.dealer_id + 1) % players.length : undefined;
+    let starter_id = _round.dealerId !== undefined ? (_round.dealerId + 1) % players.length : undefined;
 
     function playerName(p) {
         if (p.id === starter_id)
             return p.name + ' (S)';
-        else if (p.id === _round.dealer_id) {
+        else if (p.id === _round.dealerId) {
             return p.name + ' (D)';
         } else {
             return p.name;
@@ -27,7 +27,7 @@
     function playerLabel(p) {
         if (p.id === starter_id)
             return "<span class=\"material-icons-outlined role\">play_arrow</span>"
-        else if (p.id === _round.dealer_id) {
+        else if (p.id === _round.dealerId) {
             return "<span class=\"material-icons-outlined role\">shuffle</span>"
         } else {
             return "";

@@ -1,6 +1,6 @@
 import {get, writable} from 'svelte/store';
 import {Base64} from 'js-base64';
-import {migrateTrumps} from "./migrations.js";
+import {migrateDealerId, migrateTrumps} from "./migrations.js";
 import {calculateScoresForGame, currentRoundForGame, gameToProto, initialGame, initialRound, protoToGame, GAME_VERSION} from "./lib.js";
 
 const localStorageKey = 'heen-en-weer-store';
@@ -67,9 +67,14 @@ export function getGame(gameId) {
     const store = get(gameStore);
     let game = _getGameFromId(store, gameId)
     if (game.gameVersion === undefined || game.gameVersion < GAME_VERSION) {
-        game.gameVersion = GAME_VERSION;
         calculateScoresForGame(game);
-        migrateTrumps(game)
+        if (game.gameVersion < 2) {
+            migrateTrumps(game);
+        }
+        if (game.gameVersion < 3) {
+            migrateDealerId(game)
+        }
+        game.gameVersion = GAME_VERSION;
         saveGame(gameId, game);
     }
     //clone the game object to prevent mutation
@@ -87,7 +92,7 @@ export function saveGame(id, game) {
 export async function shareGame(gameId) {
     let game = getGame(gameId);
     let proto = await gameToProto(game);
-    return Base64.fromUint8Array(proto, true);
+        return Base64.fromUint8Array(proto, true);
 }
 
 export function importGame(game) {
@@ -136,13 +141,13 @@ export function listPlayers(gameId) {
 }
 
 // Add a round to a specific game
-export function addRound(id, nCards, trump, dealer_id) {
+export function addRound(id, nCards, trump, dealerId) {
     gameStore.update(store => {
         let gameIndex = store.games.findIndex(game => game.id === id);
         let round = Object.assign({}, initialRound);
         round.nCards = nCards;
         round.trump = trump;
-        round.dealer_id = dealer_id;
+        round.dealerId = dealerId;
         store.games[gameIndex].rounds = [...store.games[gameIndex].rounds, round];
         return store;
     });

@@ -10,12 +10,12 @@
     const _round = game.rounds[round];
 
     const players = game.players;
-    let starter_id = _round.dealer_id !== undefined ? (_round.dealer_id + 1) % players.length : undefined;
+    let starter_id = _round.dealerId !== undefined ? (_round.dealerId + 1) % players.length : undefined;
 
     function playerOptions(p) {
         if (p.id === starter_id)
             return {role: 's'}
-        else if (p.id === _round.dealer_id) {
+        else if (p.id === _round.dealerId) {
             return {role: 'd'};
         } else {
             return {};

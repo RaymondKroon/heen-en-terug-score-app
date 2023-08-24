@@ -14,3 +14,12 @@ export function migrateTrumps(game) {
         }
     })
 }
+
+export function migrateDealerId(game) {
+    game.rounds.forEach(round => {
+        if (round.dealerId === undefined) {
+            round.dealerId = round.dealer_id;
+            delete round.dealer_id;
+        }
+    })
+}
