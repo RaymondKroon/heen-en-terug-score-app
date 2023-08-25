@@ -4,10 +4,8 @@ import {migrateDealerId, migrateTrumps} from "./migrations.js";
 import {
     calculateScoresForGame,
     currentRoundForGame,
-    gameToProto,
     initialGame,
     initialRound,
-    protoToGame,
     GAME_VERSION,
     deserializeGame, serializeGame
 } from "./lib.js";
@@ -99,13 +97,9 @@ export function saveGame(id, game) {
 }
 
 export async function shareGame(gameId) {
-
     let game = getGame(gameId);
     let serialized = await serializeGame(game);
     return Base64.fromUint8Array(serialized, true);
-
-    // let proto = await gameToProto(game);
-    // return Base64.fromUint8Array(proto, true);
 }
 
 export function importGame(game) {
@@ -124,11 +118,8 @@ export function importGame(game) {
 }
 
 export async function loadGame(encodedGame) {
-    let proto = Base64.toUint8Array(encodedGame);
-
-    return await deserializeGame(proto);
-
-    // return await protoToGame(proto);
+    let serialized = Base64.toUint8Array(encodedGame);
+    return await deserializeGame(serialized);
 }
 
 // Add a player to a specific game
