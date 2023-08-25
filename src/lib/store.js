@@ -1,7 +1,16 @@
 import {get, writable} from 'svelte/store';
 import {Base64} from 'js-base64';
 import {migrateDealerId, migrateTrumps} from "./migrations.js";
-import {calculateScoresForGame, currentRoundForGame, gameToProto, initialGame, initialRound, protoToGame, GAME_VERSION} from "./lib.js";
+import {
+    calculateScoresForGame,
+    currentRoundForGame,
+    gameToProto,
+    initialGame,
+    initialRound,
+    protoToGame,
+    GAME_VERSION,
+    deserializeGame, serializeGame
+} from "./lib.js";
 
 const localStorageKey = 'heen-en-weer-store';
 
@@ -90,9 +99,13 @@ export function saveGame(id, game) {
 }
 
 export async function shareGame(gameId) {
+
     let game = getGame(gameId);
-    let proto = await gameToProto(game);
-        return Base64.fromUint8Array(proto, true);
+    let serialized = await serializeGame(game);
+    return Base64.fromUint8Array(serialized, true);
+
+    // let proto = await gameToProto(game);
+    // return Base64.fromUint8Array(proto, true);
 }
 
 export function importGame(game) {
@@ -112,7 +125,10 @@ export function importGame(game) {
 
 export async function loadGame(encodedGame) {
     let proto = Base64.toUint8Array(encodedGame);
-    return await protoToGame(proto);
+
+    return await deserializeGame(proto);
+
+    // return await protoToGame(proto);
 }
 
 // Add a player to a specific game

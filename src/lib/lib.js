@@ -1,5 +1,6 @@
 import protobuf from "protobufjs";
 import Long from "long";
+import serializer_wasm from "../../serializer/Cargo.toml";
 
 export const GAME_VERSION = 3;
 
@@ -202,6 +203,20 @@ function BigIntToLong(bigInt) {
     let low = Number(bigInt & 0xffffffffn);
     let high = Number(bigInt >> 32n);
     return new Long(low, high, false);
+}
+
+export async function serializeGame(game) {
+    let serializer = await serializer_wasm();
+    return serializer.serialize(game);
+}
+
+export async function deserializeGame(serialized) {
+    let serializer = await serializer_wasm();
+    let game = serializer.deserialize(serialized);
+    game.id = Date.now();
+    calculateScoresForGame(game);
+
+    return game;
 }
 
 export async function gameToProto(game) {
