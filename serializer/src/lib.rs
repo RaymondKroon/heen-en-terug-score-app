@@ -119,10 +119,12 @@ impl From<JsGame> for Game {
             player_bids.push(PlayerScore::default());
         }
 
-        let mut player_tricks: Vec<PlayerScore> = Vec::with_capacity(5);
-        for _ in 0..n_players {
-            player_tricks.push(PlayerScore::default());
-        }
+        // let mut player_tricks: Vec<PlayerScore> = Vec::with_capacity(5);
+        // for _ in 0..n_players {
+        //     player_tricks.push(PlayerScore::default());
+        // }
+
+        let mut tricks = AllTricks::default();
 
         for (round_index, round) in value.rounds.iter().enumerate() {
             trumps.push(round.trump.into());
@@ -140,10 +142,12 @@ impl From<JsGame> for Game {
                 bids.set_round(round_index as u8 + 1, *round.bids.get(i as usize).unwrap_or(&0u8));
             }
 
-            for i in 0..n_players {
-                let tricks = player_tricks.get_mut(i as usize).unwrap();
-                tricks.set_round(round_index as u8 + 1, *round.tricks.get(i as usize).unwrap_or(&0u8));
-            }
+            // for i in 0..n_players {
+            //     let tricks = player_tricks.get_mut(i as usize).unwrap();
+            //     tricks.set_round(round_index as u8 + 1, *round.tricks.get(i as usize).unwrap_or(&0u8));
+            // }
+
+            tricks[(round_index as u8) + 1] = serialize_tricks(&round.tricks);
 
         }
 
@@ -159,7 +163,8 @@ impl From<JsGame> for Game {
             current_round,
             trumps,
             player_bids,
-            player_tricks
+            // player_tricks
+            tricks
         }
     } 
 }
@@ -188,11 +193,16 @@ impl From<Game> for JsGame {
                 if round_index + 1 <= value.current_round as usize {
                     bids.push(value.player_bids[player as usize].get_round(round_index as u8 + 1));
                 }
-                if round_index + 1 < value.current_round as usize {
-                    tricks.push(value.player_tricks[player as usize].get_round(round_index as u8 + 1));
-                }
+                // if round_index + 1 < value.current_round as usize {
+                //     tricks.push(value.player_tricks[player as usize].get_round(round_index as u8 + 1));
+                // }
 
             }
+
+            if round_index + 1 < value.current_round as usize {
+                tricks = deserialize_tricks(&value.tricks[round_index as u8 + 1]);
+            }
+
             rounds.push(JsRound {
                 n_cards: cards_per_round[round_index],
                 trump: trump.clone() as u8,
@@ -286,8 +296,9 @@ struct Game {
     trumps: Vec<Trump>,
     #[deku(count = "n_players")]
     player_bids: Vec<PlayerScore>,
-    #[deku(count = "n_players")]
-    player_tricks: Vec<PlayerScore>,
+    // #[deku(count = "n_players")]
+    // player_tricks: Vec<PlayerScore>,
+    tricks: AllTricks
 
 }
 
@@ -436,7 +447,7 @@ macro_rules! tailored_enum {
     };
 }
 
-macro_rules! variable_bit_array {
+macro_rules! player_score {
     ($name:ident [ $($round_id:tt),* ]) => {
         paste! {
             use deku::prelude::*;
@@ -475,23 +486,135 @@ macro_rules! variable_bit_array {
     }
 }
 
-variable_bit_array!(PlayerScore
+player_score!(PlayerScore
     [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
      11, 12, 13, 14, 15, 16, 17, 18, 19]);
 
+
+macro_rules! variable_bit_array {
+    ($name:ident $type:ident [ $(($round_id:tt, $bits:tt)),* ]) => {
+        paste! {
+            use deku::prelude::*;
+
+            #[derive(Debug, Default, PartialEq, DekuRead, DekuWrite)]
+            #[deku(endian="big")]
+            pub struct $name {
+            $(
+            #[deku(bits = $bits)]
+            pub [<round_$round_id>]: $type,
+            )*
+            }
+
+            impl std::ops::Index<u8> for $name {
+                type Output = $type;
+                fn index(&self, index: u8) -> &Self::Output {
+                    match index {
+                        $( $round_id => &self.[<round_$round_id>], )*
+                        _ => panic!("Invalid index: {}", index)
+                    }
+                }
+            }
+
+            impl std::ops::IndexMut<u8> for $name {
+                fn index_mut(&mut self, index: u8) -> &mut Self::Output {
+                    match index {
+                        $( $round_id => &mut self.[<round_$round_id>], )*
+                        _ => panic!("Invalid index: {}", index)
+                    }
+                }
+            }
+        }
+    }
+}
+
+// for 5 players
+variable_bit_array!(AllTricks u16
+    [(1, 15), (2, 14), (3, 13), (4, 12), (5, 11), (6, 10),
+        (7, 9), (8, 8), (9, 7), (10, 6), (11, 7), (12, 8), (13, 9),
+        (14, 10), (15, 11), (16, 12), (17, 13), (18, 14), (19, 15)]);
+
+
+fn serialize_tricks(tricks: &Vec<u8>) -> u16 {
+    let mut result = 1;
+    let mut first = true;
+    for trick in tricks.iter() {
+        if !first {
+            result <<= 1;
+        }
+        first = false;
+        result |= 1;
+        result <<= *trick;
+    }
+    result
+}
+
+fn deserialize_tricks(serialized_tricks: &u16) -> Vec<u8> {
+    let mut result = Vec::new();
+    let mut value = *serialized_tricks;
+    let mut current_trick = 0;
+    while value > 0 {
+        if value & 1 == 0 {
+            current_trick += 1;
+        } else {
+            result.push(current_trick);
+            current_trick = 0;
+        }
+        value >>= 1;
+    }
+
+    if current_trick > 0 {
+        result.push(current_trick);
+    }
+
+    result.reverse();
+    result
+}
 
 #[cfg(test)]
 mod test {
     use std::convert::{TryInto};
     use deku::{DekuContainerRead, DekuContainerWrite};
-    use crate::{calculate_needed_bits, Game, JsGame, JsPlayer, JsRound, Player, Trump};
+    use crate::{AllTricks, calculate_needed_bits, deserialize_tricks, Game, JsGame, JsPlayer, JsRound, Player, serialize_tricks, Trump};
     use paste::paste;
     use crate::Trump::{Heart, Spade};
     use crate::values_playerscore::Value1;
 
     #[test]
+    fn test_serialize_tricks() {
+        let tricks = vec![0, 3, 2, 4, 0];
+        let serialized = serialize_tricks(&tricks);
+        assert_eq!(0b11000100100001, serialized);
+
+        let original = deserialize_tricks(&serialized);
+        assert_eq!(tricks, original);
+    }
+
+    #[test]
+    fn test_8bit_tricks_serialize() {
+        let tricks = vec![0, 0, 1, 2, 0];
+        let serialized = serialize_tricks(&tricks);
+        assert_eq!(0b11101001, serialized);
+
+        let mut container = AllTricks::default();
+        container.round_8 = serialized;
+        let container_serialized = container.to_bytes().unwrap();
+        let (_, container_deserialized) = AllTricks::from_bytes((&container_serialized, 0)).unwrap();
+
+        let original = deserialize_tricks(&container_deserialized.round_8);
+        assert_eq!(tricks, original);
+    }
+
+    #[test]
+    fn test_8bit_tricks_deserialize() {
+        let serialized = 0b11101001;
+        let deserialized = deserialize_tricks(&serialized);
+        assert_eq!(vec![0, 0, 1, 2, 0], deserialized);
+    }
+
+
+    #[test]
     fn test_variable_bit_array() {
-        variable_bit_array!(TestStruct [1, 2]);
+        player_score!(TestStruct [1, 2]);
         let _bids = TestStruct::default();
     }
 
