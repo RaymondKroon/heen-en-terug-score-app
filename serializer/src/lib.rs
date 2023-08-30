@@ -137,12 +137,12 @@ impl From<JsGame> for Game {
 
             for i in 0..n_players {
                 let bids = player_bids.get_mut(i as usize).unwrap();
-                bids[(round_index as u8) + 1] = round.bids.get(i as usize).unwrap_or(&0u8).clone();
+                bids.set_round(round_index as u8 + 1, *round.bids.get(i as usize).unwrap_or(&0u8));
             }
 
             for i in 0..n_players {
                 let tricks = player_tricks.get_mut(i as usize).unwrap();
-                tricks[(round_index as u8) + 1] = round.tricks.get(i as usize).unwrap_or(&0u8).clone();
+                tricks.set_round(round_index as u8 + 1, *round.tricks.get(i as usize).unwrap_or(&0u8));
             }
 
         }
@@ -186,10 +186,10 @@ impl From<Game> for JsGame {
             let mut tricks = Vec::new();
             for player in 0..value.n_players {
                 if round_index + 1 <= value.current_round as usize {
-                    bids.push(value.player_bids[player as usize][round_index as u8 + 1]);
+                    bids.push(value.player_bids[player as usize].get_round(round_index as u8 + 1));
                 }
                 if round_index + 1 < value.current_round as usize {
-                    tricks.push(value.player_tricks[player as usize][round_index as u8 + 1]);
+                    tricks.push(value.player_tricks[player as usize].get_round(round_index as u8 + 1));
                 }
 
             }
@@ -301,34 +301,172 @@ fn calculate_needed_bits(n: u8) -> u8 {
     bits
 }
 
+macro_rules! zero_nonzero {
+    ($round:tt, $bits:tt) => {
+        use deku::prelude::*;
+
+    paste::paste! {
+        #[derive(Debug, Clone, Default, PartialEq, DekuRead, DekuWrite)]
+        #[deku(type = "u8", bits = "1")]
+        pub enum [<Value$round>] {
+            #[default]
+            #[deku(id = "0")]
+            Zero,
+            #[deku(id = "1")]
+            NonZero(#[deku(bits = $bits)] u8)
+        }
+        impl From<u8> for [<Value$round>] {
+            fn from(value: u8) -> Self {
+                match value {
+                    0 => [<Value$round>]::Zero,
+                    _ => [<Value$round>]::NonZero(value - 1)
+                }
+            }
+        }
+
+        impl From<[<Value$round>]> for u8 {
+            fn from(value: [<Value$round>]) -> Self {
+                match value {
+                    [<Value$round>]::Zero => 0,
+                    [<Value$round>]::NonZero(v) => v + 1
+                }
+            }
+        }
+    }
+    }
+}
+
+macro_rules! max_three_or_higher {
+    ($round:tt, $bits:tt) => {
+        use deku::prelude::*;
+
+    paste::paste! {
+        #[derive(Debug, Clone, PartialEq, DekuRead, DekuWrite)]
+        #[deku(type = "u8", bits = "1")]
+        pub enum [<Value$round>] {
+            #[deku(id = "0")]
+            MaxThree(#[deku(bits = "2")] u8),
+            #[deku(id = "1")]
+            Higher(#[deku(bits = $bits)] u8)
+        }
+
+        impl Default for [<Value$round>] {
+            fn default() -> Self {
+                [<Value$round>]::MaxThree(0)
+            }
+        }
+
+        impl From<u8> for [<Value$round>] {
+            fn from(value: u8) -> Self {
+                match value {
+                    0..=3 => [<Value$round>]::MaxThree(value),
+                    _ => [<Value$round>]::Higher(value - 3)
+                }
+            }
+        }
+        impl From<[<Value$round>]> for u8 {
+            fn from(value: [<Value$round>]) -> Self {
+                match value {
+                    [<Value$round>]::MaxThree(v) => v,
+                    [<Value$round>]::Higher(v) => v + 3
+                }
+            }
+        }
+    }
+    }
+}
+
+macro_rules! tailored_enum {
+    (1) => { // 10
+        max_three_or_higher!(1, 3);
+    };
+    (2) => { // 9
+        max_three_or_higher!(2, 3);
+    };
+    (3) => { // 8
+        max_three_or_higher!(3, 3);
+    };
+    (4) => { // 7
+        max_three_or_higher!(4, 3);
+    };
+    (5) => { // 6
+        max_three_or_higher!(5, 2);
+    };
+    (6) => { // 5
+        zero_nonzero!(6, 3);
+    };
+    (7) => { // 4
+        zero_nonzero!(7, 2);
+    };
+    (8) => { // 3
+        zero_nonzero!(8, 2);
+    };
+    (9) => { // 2
+        zero_nonzero!(9, 1);
+    };
+    (10) => { // 1
+        zero_nonzero!(10, 1);
+    };
+    (11) => { // 2
+        zero_nonzero!(11, 1);
+    };
+    (12) => { // 3
+        zero_nonzero!(12, 2);
+    };
+    (13) => { // 4
+        zero_nonzero!(13, 2);
+    };
+    (14) => { // 5
+        zero_nonzero!(14, 3);
+    };
+    (15) => { // 6
+        max_three_or_higher!(15, 2);
+    };
+    (16) => { // 7
+        max_three_or_higher!(16, 3);
+    };
+    (17) => { // 8
+        max_three_or_higher!(17, 3);
+    };
+    (18) => { // 9
+        max_three_or_higher!(18, 3);
+    };
+    (19) => { // 10
+        max_three_or_higher!(19, 3);
+    };
+}
+
 macro_rules! variable_bit_array {
-    ($name:ident [ $(($round_id:tt, $bits:tt)),* ]) => {
+    ($name:ident [ $($round_id:tt),* ]) => {
         paste! {
             use deku::prelude::*;
             use std::ops::{Index, IndexMut};
 
+            mod [<values_$name:lower>] {
+                $(
+                tailored_enum!($round_id);
+                )*
+            }
+
             #[derive(Debug, Default, PartialEq, DekuRead, DekuWrite)]
             pub struct $name {
             $(
-            #[deku(bits = $bits)]
-            pub [<round_$round_id>]: u8,
+            pub [<round_$round_id>]: [<values_$name:lower>]::[<Value$round_id>],
             )*
             }
 
-            impl Index<u8> for $name {
-                type Output = u8;
-                fn index(&self, index: u8) -> &Self::Output {
-                    match index {
-                        $( $round_id => &self.[<round_$round_id>], )*
+            impl $name {
+                pub fn get_round(&self, index: u8) -> u8 {
+                    let result: u8 = match index {
+                        $( $round_id => self.[<round_$round_id>].clone().into(), )*
                         _ => panic!("Invalid index: {}", index)
-                    }
+                    };
+                    result
                 }
-            }
 
-            impl IndexMut<u8> for $name {
-                fn index_mut(&mut self, index: u8) -> &mut Self::Output {
+                pub fn set_round(&mut self, index: u8, value: u8) {
                     match index {
-                        $( $round_id => &mut self.[<round_$round_id>], )*
+                        $( $round_id => self.[<round_$round_id>] = value.into(), )*
                         _ => panic!("Invalid index: {}", index)
                     }
                 }
@@ -338,9 +476,8 @@ macro_rules! variable_bit_array {
 }
 
 variable_bit_array!(PlayerScore
-    [(1, 4), (2, 4), (3, 4), (4, 3), (5, 3), (6, 3),
-        (7, 3), (8, 2), (9, 2), (10, 1), (11, 2), (12, 2), (13, 3),
-        (14, 3), (15, 3), (16, 3), (17, 4), (18, 4), (19, 4)]);
+    [1, 2, 3, 4, 5, 6, 7, 8, 9, 10,
+     11, 12, 13, 14, 15, 16, 17, 18, 19]);
 
 
 #[cfg(test)]
@@ -350,11 +487,12 @@ mod test {
     use crate::{calculate_needed_bits, Game, JsGame, JsPlayer, JsRound, Player, Trump};
     use paste::paste;
     use crate::Trump::{Heart, Spade};
+    use crate::values_playerscore::Value1;
 
     #[test]
     fn test_variable_bit_array() {
-        variable_bit_array!(TestStruct [(1, 4), (2, 3)]);
-        let bids = TestStruct::default();
+        variable_bit_array!(TestStruct [1, 2]);
+        let _bids = TestStruct::default();
     }
 
     #[test]
@@ -390,8 +528,8 @@ mod test {
         };
 
         let game = Game::from(js_game);
-        assert_eq!(game.player_bids[0].round_1, 2);
-        assert_eq!(game.player_bids[1].round_1, 3);
+        assert_eq!(game.player_bids[0].round_1, Value1::MaxThree(2));
+        assert_eq!(game.player_bids[1].round_1, Value1::MaxThree(3));
     }
 
     #[test]
