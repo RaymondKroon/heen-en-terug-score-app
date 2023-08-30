@@ -119,11 +119,6 @@ impl From<JsGame> for Game {
             player_bids.push(PlayerScore::default());
         }
 
-        // let mut player_tricks: Vec<PlayerScore> = Vec::with_capacity(5);
-        // for _ in 0..n_players {
-        //     player_tricks.push(PlayerScore::default());
-        // }
-
         let mut tricks = AllTricks::default();
 
         for (round_index, round) in value.rounds.iter().enumerate() {
@@ -142,11 +137,6 @@ impl From<JsGame> for Game {
                 bids.set_round(round_index as u8 + 1, *round.bids.get(i as usize).unwrap_or(&0u8));
             }
 
-            // for i in 0..n_players {
-            //     let tricks = player_tricks.get_mut(i as usize).unwrap();
-            //     tricks.set_round(round_index as u8 + 1, *round.tricks.get(i as usize).unwrap_or(&0u8));
-            // }
-
             tricks[(round_index as u8) + 1] = serialize_tricks(&round.tricks);
 
         }
@@ -163,7 +153,6 @@ impl From<JsGame> for Game {
             current_round,
             trumps,
             player_bids,
-            // player_tricks
             tricks
         }
     } 
@@ -193,9 +182,6 @@ impl From<Game> for JsGame {
                 if round_index + 1 <= value.current_round as usize {
                     bids.push(value.player_bids[player as usize].get_round(round_index as u8 + 1));
                 }
-                // if round_index + 1 < value.current_round as usize {
-                //     tricks.push(value.player_tricks[player as usize].get_round(round_index as u8 + 1));
-                // }
 
             }
 
@@ -296,8 +282,6 @@ struct Game {
     trumps: Vec<Trump>,
     #[deku(count = "n_players")]
     player_bids: Vec<PlayerScore>,
-    // #[deku(count = "n_players")]
-    // player_tricks: Vec<PlayerScore>,
     tricks: AllTricks
 
 }
