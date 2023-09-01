@@ -13,8 +13,8 @@
       "type": "image/png"
     }
   ],
-  "id": "/#/list",
-  "start_url": "/#/list",
+  "id": "#/list",
+  "start_url": "#/list",
   "background_color": "#ffffff",
   "display": "standalone",
   "scope": ".",
@@ -24,7 +24,7 @@
       "name": "Nieuw spel",
       "short_name": "nieuw",
       "description": "Maak een nieuw spel aan",
-      "url": "/#/new",
+      "url": "#/new",
       "icons": [
         {
           "src": "android-chrome-192x192.png",
@@ -37,7 +37,7 @@
       "name": "Statistieken",
       "short_name": "stats",
       "description": "Statistieken van de opgeslagen spellen",
-      "url": "/#/stats",
+      "url": "#/stats",
       "icons": [
         {
           "src": "android-chrome-192x192.png",
