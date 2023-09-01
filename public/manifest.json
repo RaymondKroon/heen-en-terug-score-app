@@ -13,11 +13,10 @@
       "type": "image/png"
     }
   ],
-  "id": "/heen-en-terug-score-app/#/list",
-  "start_url": "/heen-en-terug-score-app/#/list",
+  "start_url": "/",
   "background_color": "#ffffff",
   "display": "standalone",
-  "scope": ".",
+  "scope": "/heen-en-terug-score-app",
   "theme_color": "#000000",
   "shortcuts": [
     {
