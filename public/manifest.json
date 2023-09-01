@@ -1,0 +1,37 @@
+{
+  "short_name": "Heen en terug",
+  "name": "Heen en terug",
+  "icons": [
+    {
+      "src": "/android-chrome-192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/android-chrome-512x512.png",
+      "sizes": "512x512",
+      "type": "image/png"
+    }
+  ],
+  "id": "/#/list",
+  "start_url": "/#/list",
+  "background_color": "#ffffff",
+  "display": "standalone",
+  "scope": "/",
+  "theme_color": "#000000",
+  "shortcuts": [
+    {
+      "name": "Nieuw spel",
+      "short_name": "nieuw",
+      "description": "Maak een nieuw spel aan",
+      "url": "/#/new"
+    },
+    {
+      "name": "Statistieken",
+      "short_name": "stats",
+      "description": "Statistieken van de opgeslagen spellen",
+      "url": "/#/stats"
+    }
+  ],
+  "description": "De heen en terug score app"
+}
