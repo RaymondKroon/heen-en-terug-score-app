@@ -83,6 +83,7 @@
     }
 
     function closeModal() {
+        selectedGames = [];
         modal = false;
     }
 
@@ -174,6 +175,7 @@
         <div class="modal-content">
             <textarea rows="5" on:change={calculate} bind:value={oldStandings} />
             <textarea rows="5" bind:value={earningsResult} />
+            <button on:click="{_ => navigator.clipboard.writeText(earningsResult)}">Copy</button>
             <button on:click="{closeModal}">Close</button>
         </div>
     </div>
