@@ -79,7 +79,7 @@
             return acc;
         }, totalEarnings);
 
-        earningsResult = Array.from(totalEarnings.entries()).map(([k, v]) => `${k} ${v}`).join("\n");
+        earningsResult = Array.from(totalEarnings.entries()).map(([k, v]) => `${k} ${v.toFixed(2)}`).join("\n");
     }
 
     function closeModal() {
