@@ -123,7 +123,7 @@
     }
 
     .selected {
-        background-color: #f0f0f0;
+        background-color: var(--accent-color);
     }
 
     .modal {
@@ -135,15 +135,14 @@
         width: 100%;
         height: 100%;
         overflow: auto;
-        background-color: rgb(0,0,0);
         background-color: rgba(0,0,0,0.4);
     }
 
     .modal-content {
-        background-color: #fefefe;
+        background-color: var(--background-color);
         margin: 15% auto;
         padding: 20px;
-        border: 1px solid #888;
+        border: 1px solid var(--border-color);
         width: 80%;
         display: flex;
         flex-direction: column;

@@ -16,6 +16,9 @@
   --accent-color-light:  #eee;
   --accent-color-dark:   #444;
 
+  --background-color-light: #ffffff;
+  --background-color-dark:  #242424;
+
 }
 
 a {
@@ -71,9 +74,10 @@ button:focus-visible {
 @media (prefers-color-scheme: light) {
   :root {
     color: #213547;
-    background-color: #ffffff;
+    background-color: var(--background-color-light);
     --accent-color: var(--accent-color-light);
     --border-color: black;
+    --background-color: var(--background-color-light);
   }
   a:hover {
     color: #747bff;
@@ -86,9 +90,10 @@ button:focus-visible {
 @media (prefers-color-scheme: dark) {
   :root {
     color: rgba(255, 255, 255, 1);
-    background-color: #242424;
+    background-color: var(--background-color-dark);
     --accent-color: var(--accent-color-dark);
     --border-color: white;
+    --background-color: var(--background-color-dark);
   }
   a:hover {
     color: #535bf2;
