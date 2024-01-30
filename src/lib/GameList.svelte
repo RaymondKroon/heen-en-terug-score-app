@@ -1,7 +1,6 @@
 <script>
     import { createEventDispatcher } from 'svelte';
     import { deleteGame as _deleteGame, listGames } from './store.js';
-    import { longPress } from "./ui.js";
     import {calculateGameEarnings} from "./lib.js";
 
     export let id = -1; // not using, prevent error on browser back button
@@ -118,6 +117,11 @@
         margin-left: 8px;
     }
 
+    .medal-icon {
+        cursor: pointer;
+        margin-left: 8px;
+    }
+
     .selected {
         background-color: #f0f0f0;
     }
@@ -153,8 +157,9 @@
 <div class="list">
     {#each games as game (game.id)}
         <div class="list-item" class:selected={selectedGames.includes(game.id)}>
-            <span class="list-item-text" on:shortpress="{_ => playGame(game.id)}" use:longPress={500} on:longpress="{_ => selectGame(game.id)}">{game.name}</span>
+            <span class="list-item-text" on:click="{_ => playGame(game.id)}">{game.name}</span>
             <span class="play-icon" on:click="{_ => playGame(game.id)}">▶</span>
+            <span class="medal-icon" on:click="{_ => selectGame(game.id)}">🏅</span>
             <span class="delete-icon" on:click="{_ => deleteGame(game.id)}">❌</span>
         </div>
     {/each}
