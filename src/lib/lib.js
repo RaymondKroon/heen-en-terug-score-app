@@ -100,6 +100,39 @@ export function calculateScoresForGame(game) {
     });
 }
 
+export function calculateGameEarnings(game) {
+    let players = [...game.players];
+    let earningsMap = new Map();
+    let totalMoney = 0;
+
+    players.sort(comparePlayerScore);
+    players.reverse();
+    let lowestScore = players[0].score;
+    let highestScore = players[players.length - 1].score;
+
+    let nWinners = 0;
+
+    for (let i = players.length - 1; i > 0; i--) {
+        if (players[i].score === highestScore) {
+            nWinners++;
+        }
+    }
+
+    players.forEach((player) => {
+        if (lowestScore === player.score) {
+            earningsMap.set(player.name, -3);
+            totalMoney += 3;
+        } else if (highestScore === player.score) {
+            earningsMap.set(player.name, totalMoney / nWinners);
+        } else {
+            earningsMap.set(player.name, -1.5);
+            totalMoney += 1.5;
+        }
+    });
+
+    return earningsMap;
+}
+
 export const TRUMPS = {
     SPADES: 0,
     HEARTS: 1,
