@@ -231,6 +231,23 @@ export function getTotals() {
     return Object.values(totals);
 }
 
+export function allPlayerNames() {
+    const store = get(gameStore);
+    let names = new Set();
+    store.games.forEach(game => {
+        game.players.forEach(player => {
+            names.add(player.name);
+        });
+    });
+    return Array.from(names).sort();
+}
+
+export function playersForLastGame() {
+    const store = get(gameStore);
+    let game = store.games[store.games.length - 1];
+    return Array.from(game.players.map(player => player.name));
+}
+
 // Reset the store state
 export function resetStore() {
     gameStore.set(initialStore);

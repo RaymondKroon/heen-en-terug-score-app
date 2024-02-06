@@ -1,14 +1,34 @@
 <script>
     import { onMount } from 'svelte';
-    import { addGame, addPlayer, addRound, gameExists } from './store.js';
+    import {addGame, addPlayer, addRound, allPlayerNames, gameExists, playersForLastGame} from './store.js';
     import { TRUMPS } from './lib.js';
     let players = [];
+
+    const allNames = allPlayerNames();
+    const lastGameNames = playersForLastGame();
+    let active = 0;
 
     onMount(async () => {
         players = ['','','','',''];
     });
 
     function updatePlayer(index, value) {
+    }
+
+    function setPlayerName(name) {
+        return function() {
+            players[active] = name;
+            active = (active + 1) % players.length;
+        }
+    }
+
+    async function rematch() {
+        const lastGamePlayers = playersForLastGame();
+        const confirmation = confirm(`Rematch: ${lastGamePlayers.join(', ')}?`);
+        if (confirmation) {
+            players = lastGamePlayers;
+            await saveChanges();
+        }
     }
 
     // Save the changes
@@ -64,6 +84,25 @@
     .editable-player input {
         margin-right: 8px;
     }
+
+    .player-names {
+        margin-top: 10px;
+        display: flex;
+        flex-direction: row;
+        column-gap: 10px;
+        flex-wrap: wrap;
+        max-width: 400px;
+    }
+
+    .player-name {
+        display: inline-block;
+        padding: 2px 6px;
+        margin: 2px;
+        background-color: var(--accent-color);
+        border-radius: 4px;
+        font-size: 0.875em;
+        cursor: pointer;
+    }
 </style>
 
 <h1>Nieuw spel</h1>
@@ -77,4 +116,11 @@
     </div>
 {/each}
 
-<button on:click={saveChanges}>Save</button>
+<button on:click={saveChanges}>Start</button>
+<button on:click={rematch}>Rematch</button>
+
+<div class="player-names">
+    {#each allNames as name}
+        <div class="player-name" on:click={setPlayerName(name)}>{name}</div>
+    {/each}
+</div>
