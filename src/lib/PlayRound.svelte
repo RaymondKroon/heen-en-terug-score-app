@@ -9,6 +9,9 @@
     const game = getGame(id);
     const _round = game.rounds[round];
 
+    const _overOrUnder = _round.bids.reduce((a, b) => a + b) - _round.nCards
+    const _overOrUnderDisplay = !!_overOrUnder ? `(${Math.sign(_overOrUnder) > 0 ? '+' : '-'}${Math.abs(_overOrUnder)})` : "";
+
     const players = game.players;
     let starter_id = _round.dealerId !== undefined ? (_round.dealerId + 1) % players.length : undefined;
 
@@ -33,7 +36,7 @@
 <h1>Ronde {round + 1} ({_round.nCards})<a href={`#/game/${id}`}>↑</a></h1>
 <Trump size=8 suit="{_round.trump}" />
 
-<h2>Geboden <a href={`#/edit/${id}/${round}`}>✎</a></h2>
+<h2>Geboden { _overOrUnderDisplay } <a href={`#/edit/${id}/${round}`}>✎</a></h2>
 <Leaderboard zoom={true} entries={players.map(p => new LeaderboardEntry(p.name, _round.bids[p.id], playerOptions(p)))} />
 
 <button on:click="{gotoResult}">Resultaat</button>
