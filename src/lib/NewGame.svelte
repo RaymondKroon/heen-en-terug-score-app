@@ -117,7 +117,7 @@
 {/each}
 
 <button on:click={saveChanges}>Start</button>
-<button on:click={rematch}>Rematch</button>
+{#if lastGameNames && lastGameNames.length > 0}<button on:click={rematch}>Rematch</button>{/if}
 
 <div class="player-names">
     {#each allNames as name}
