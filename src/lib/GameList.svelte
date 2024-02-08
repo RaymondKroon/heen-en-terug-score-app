@@ -1,7 +1,7 @@
 <script>
     import { createEventDispatcher } from 'svelte';
     import { deleteGame as _deleteGame, listGames } from './store.js';
-    import {calculateGameEarnings} from "./lib.js";
+    import {calculateGameEarnings, isGameFinished} from "./lib.js";
 
     export let id = -1; // not using, prevent error on browser back button
     export let round = -1; // not using, prevent error on browser back button
@@ -98,29 +98,29 @@
     .list-item {
         display: flex;
         align-items: center;
+        gap: 8px;
         margin-bottom: 8px;
+    }
+
+    .list-item > span {
+        cursor: pointer;
+    }
+
+    .list-item > span:not(.list-item-text) {
+        width: 22px;
+        text-align: center;
     }
 
     .list-item-text {
         flex-grow: 1;
-        cursor: pointer;
     }
 
     .delete-icon {
-        cursor: pointer;
         color: red;
-        margin-left: 8px;
     }
 
     .play-icon {
         cursor: pointer;
-        color: green;
-        margin-left: 8px;
-    }
-
-    .medal-icon {
-        cursor: pointer;
-        margin-left: 8px;
     }
 
     .selected {
@@ -159,7 +159,7 @@
         <div class="list-item" class:selected={selectedGames.includes(game.id)}>
             <span class="list-item-text" on:click="{_ => playGame(game.id)}">{game.name}</span>
             <span class="play-icon" on:click="{_ => playGame(game.id)}">▶</span>
-            <span class="medal-icon" on:click="{_ => selectGame(game.id)}">🏅</span>
+            {#if isGameFinished(game)}<span class="medal-icon" on:click="{_ => selectGame(game.id)}">🏅</span>{/if}
             <span class="delete-icon" on:click="{_ => deleteGame(game.id)}">❌</span>
         </div>
     {/each}
