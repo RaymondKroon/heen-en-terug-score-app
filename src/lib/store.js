@@ -245,7 +245,7 @@ export function allPlayerNames() {
 export function playersForLastGame() {
     const store = get(gameStore);
     let game = store.games[store.games.length - 1];
-    return Array.from(game.players.map(player => player.name));
+    return game ? Array.from(game.players.map(player => player.name)) : [];
 }
 
 // Reset the store state
