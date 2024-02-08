@@ -10,6 +10,7 @@
     "test": "vitest"
   },
   "dependencies": {
+    "canvas-confetti": "^1.9.2",
     "html-to-image": "^1.11.11",
     "js-base64": "^3.7.5",
     "long":  "5.2.3"

@@ -100,6 +100,11 @@ export function calculateScoresForGame(game) {
     });
 }
 
+export function isGameFinished(game) {
+    // it is finished if all the rounds have bids and tricks
+    return game.rounds.every(round => round.bids && round.tricks && round.bids.length > 0 && round.tricks.length > 0);
+}
+
 export function calculateGameEarnings(game) {
     let players = [...game.players];
     let earningsMap = new Map();
@@ -131,6 +136,21 @@ export function calculateGameEarnings(game) {
     });
 
     return earningsMap;
+}
+
+export function getWinners(game) {
+    let players = [...game.players];
+    players.sort(comparePlayerScore);
+    let highestScore = players[0].score;
+    return players.filter(player => player.score === highestScore).map(player => player.name);
+}
+
+export function getLosers(game) {
+    let players = [...game.players];
+    players.sort(comparePlayerScore);
+    players.reverse();
+    let lowestScore = players[0].score;
+    return players.filter(player => player.score === lowestScore).map(player => player.name);
 }
 
 export const TRUMPS = {

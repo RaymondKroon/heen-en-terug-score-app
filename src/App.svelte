@@ -9,6 +9,7 @@
     import EditRound from "./lib/EditRound.svelte";
     import Stats from "./lib/Stats.svelte";
     import Shared from "./lib/Shared.svelte";
+    import WinnerSplash from "./lib/WinnerSplash.svelte";
 
     function handleMessage(event) {
         if (event.detail.type === 'play') {
@@ -70,6 +71,12 @@
             let data = path.slice(5);
             page = Shared;
             props = {data};
+        }
+        else if (path.startsWith('/splash')) {
+            let gameId = path.slice(8);
+            let id = parseInt(gameId);
+            page = WinnerSplash;
+            props = {id};
         }
         else {
             window.location.href = '#/list';

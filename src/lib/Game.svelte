@@ -1,6 +1,6 @@
 <script>
     import {currentRoundId as _currentRoundId, getGame, getStandings, listPlayers, shareGame} from './store.js';
-    import {TRUMPS_SHORT} from "./lib.js";
+    import {isGameFinished, TRUMPS_SHORT} from "./lib.js";
     import Leaderboard from "./Leaderboard.svelte";
     import Trump from "./Trump.svelte";
     import { toBlob } from 'html-to-image';
@@ -13,7 +13,10 @@
     let currentRoundId = _currentRoundId(id);
     let currentRound = getGame(id).rounds[currentRoundId];
 
-    let game = getGame(id).rounds;
+    let game = getGame(id);
+    let rounds = game.rounds;
+    let gameFinished = isGameFinished(game);
+
     let dealer = currentRound ? players[currentRound.dealerId] : undefined;
 
     function playRound(i) {
@@ -176,7 +179,9 @@
 <div class="game">
     <div id="standings">
         <h1>Stand <a href="#/list">↑</a>
-            <a href="#" on:click|preventDefault={exportStandings}><span class="material-icons-outlined">share</span></a></h1>
+            <a href="#" on:click|preventDefault={exportStandings}><span class="material-icons-outlined">share</span></a>
+            {#if gameFinished}<a href="#/splash/{id}"><span class="material-icons-outlined">celebration</span></a>{/if}
+        </h1>
         <Leaderboard bind:this={leaderboard} zoom={true} entries={getStandings(id)}/>
     </div>
 
@@ -208,7 +213,7 @@
         </tr>
         </thead>
         <tbody class="content">
-        {#each game as round, i}
+        {#each rounds as round, i}
             <tr class="row round {i === currentRoundId ? 'active' : ''}">
                 <td class="ncards">{round.nCards}</td>
                 <td class="trump">{TRUMPS_SHORT[round.trump]}</td>
