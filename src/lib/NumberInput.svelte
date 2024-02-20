@@ -43,12 +43,16 @@
         background-color: #007bff;
         color: #fff;
     }
+
+    .no-select {
+        user-select: none;
+    }
 </style>
 
 <div class="slider-container">
     {#each values as i}
         <div
-                class="slider-button {i === value ? 'active' : ''}"
+                class="slider-button no-select {i === value ? 'active' : ''}"
                 on:click={() => handleBidChange(i)}
         >
             {i}
