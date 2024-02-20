@@ -12,11 +12,11 @@
     const bidResult = _round.bids.reduce((a, b) => a + b) - _round.nCards
     let bidResultMessage = "";
     if (bidResult > 0) {
-        bidResultMessage = `${bidResult} te veel geboden`;
+        bidResultMessage = `+${bidResult}`;
     } else if (bidResult < 0) {
-        bidResultMessage = `${Math.abs(bidResult)} te weinig geboden`;
+        bidResultMessage = `-${Math.abs(bidResult)}`;
     } else {
-        bidResultMessage = `Precies goed geboden`;
+        bidResultMessage = `=`;
     }
 
     const players = game.players;
@@ -39,23 +39,20 @@
 
 <style>
     .bid-result {
-        font-size: 1.0em;
+        font-size: 7em;
         color: var(--color-text);
         font-weight: bold;
-        color: green;
-    }
-
-    .bid-result.overbid, .bid-result.underbid{
-        color: red;
     }
 
 </style>
 
 <h1>Ronde {round + 1} ({_round.nCards})<a href={`#/game/${id}`}>↑</a></h1>
-<Trump size=8 suit="{_round.trump}" />
+<div style="display: flex; flex-direction: row; justify-content: center; align-items: center;">
+    <Trump size=8 suit="{_round.trump}"/>
+    <div class="bid-result" >{bidResultMessage}</div>
+</div>
 
 <h2>Geboden <a href={`#/edit/${id}/${round}`}>✎</a></h2>
-<div class="bid-result" class:overbid={bidResult > 0} class:underbid={bidResult < 0}>{bidResultMessage}</div>
 <Leaderboard zoom={true} entries={players.map(p => new LeaderboardEntry(p.name, _round.bids[p.id], playerOptions(p)))} />
 
 <button on:click="{gotoResult}">Resultaat</button>
