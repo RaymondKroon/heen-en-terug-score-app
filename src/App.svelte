@@ -10,6 +10,7 @@
     import Stats from "./lib/Stats.svelte";
     import Shared from "./lib/Shared.svelte";
     import WinnerSplash from "./lib/WinnerSplash.svelte";
+    import Countdown from "./lib/Countdown.svelte";
 
     function handleMessage(event) {
         if (event.detail.type === 'play') {
@@ -45,7 +46,14 @@
             let round = parseInt(id_round.split('/')[1]);
             page = BidRound;
             props = {id, round};
-        } else if (path.startsWith('/play')) {
+        } else if (path.startsWith('/countdown')) {
+            let id_round = path.slice(11);
+            let id = parseInt(id_round.split('/')[0]);
+            let round = parseInt(id_round.split('/')[1]);
+            page = Countdown;
+            props = {id, round};
+        }
+        else if (path.startsWith('/play')) {
             let id_round = path.slice(6);
             let id = parseInt(id_round.split('/')[0]);
             let round = parseInt(id_round.split('/')[1]);
