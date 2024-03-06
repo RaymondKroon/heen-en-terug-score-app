@@ -31,6 +31,21 @@
         }
     }
 
+    function shufflePlayerOrder() {
+        let nonEmptyPlayers = players.filter(p => p !== '');
+        // keep the last the same, because that is the scorekeeper
+        let last = nonEmptyPlayers.pop();
+        players = ['','','','', ''];
+        let i = 0;
+        while (nonEmptyPlayers.length > 0) {
+            let index = getRandomInt(nonEmptyPlayers.length);
+            players[i] = nonEmptyPlayers[index];
+            nonEmptyPlayers.splice(index, 1);
+            i++;
+        }
+        players[i] = last;
+    }
+
     // Save the changes
     async function saveChanges() {
 
@@ -103,6 +118,13 @@
         font-size: 0.875em;
         cursor: pointer;
     }
+
+    .buttons {
+        max-width: 200px;
+        display: grid;
+        grid-gap: 5px;
+        grid: auto / auto auto;
+    }
 </style>
 
 <h1>Nieuw spel</h1>
@@ -116,8 +138,11 @@
     </div>
 {/each}
 
+<div class="buttons">
 <button on:click={saveChanges}>Start</button>
 {#if lastGameNames && lastGameNames.length > 0}<button on:click={rematch}>Rematch</button>{/if}
+<button on:click={shufflePlayerOrder}>Hussel</button>
+</div>
 
 <div class="player-names">
     {#each allNames as name}
