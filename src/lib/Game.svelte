@@ -23,8 +23,8 @@
         if (currentRound.bids && currentRound.bids.length > 0) {
             window.location.hash = `/play/${id}/${i}`;
         } else {
-            // window.location.hash = `/bid/${id}/${i}`;
-            window.location.hash=`/countdown/${id}/${currentRoundId}`
+            window.location.hash = `/bid/${id}/${i}`;
+            //window.location.hash=`/countdown/${id}/${currentRoundId}`
         }
     }
 
