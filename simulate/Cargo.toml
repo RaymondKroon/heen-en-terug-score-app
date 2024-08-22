@@ -9,8 +9,9 @@ path = "src/lib.rs"
 name = "simulate"
 
 [[bin]]
-name = "simulate"
+name = "main"
 path = "src/main.rs"
 
 [dependencies]
+colored = "2.1.0"
 rand = "0.8.5"

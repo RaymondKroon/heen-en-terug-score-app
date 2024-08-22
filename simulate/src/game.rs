@@ -1,6 +1,7 @@
+use std::fmt::Display;
 use rand::prelude::SliceRandom;
 use rand::rngs::ThreadRng;
-use crate::card::{all_cards, highest_card, Card, Suit};
+use crate::card::{create_deck, highest_card, Card, Suit};
 
 #[derive(Debug, Clone)]
 pub struct Player {
@@ -8,6 +9,14 @@ pub struct Player {
     hand: Vec<Card>,
     pub played: Vec<Card>,
     pub tricks: usize,
+}
+
+impl Display for Player {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // join hand adn played cards
+        let s_cards = self.hand.iter().chain(self.played.iter()).map(|card| format!("{}", card)).collect::<Vec<String>>().join(" ");
+        write!(f, "Player {} - {}", self.starting_position, s_cards)
+    }
 }
 
 impl Player {
@@ -41,13 +50,16 @@ impl Player {
         } else {
             let trumped = trump.map(|trump| previous_cards.first().unwrap().suit != trump && previous_cards.iter().any(|c|c.suit == trump)).unwrap_or(false);
             if trumped {
-                let highest_trump = previous_cards.iter().filter(|c| c.suit == trump.unwrap()).max_by_key(|c| c.rank).unwrap();
+                let highest_trump = previous_cards.iter().filter(|c| c.suit == trump.unwrap()).max_by_key(|c| c.rank)?;
                 // if next card is no trump, play the card. if the next card is a trump and higher, play the card. if the next card is a trump and lower, pick the next card
                 let card = self.hand.iter().find(|&card| card.suit == trump.unwrap() && card.rank > highest_trump.rank)
                     .or_else(|| self.hand.iter().find(|&card| card.suit != trump.unwrap()))
                     .or_else(|| self.hand.first()).cloned()?;
                 self.hand.retain(|c| c != &card);
                 self.played.push(card.clone());
+                // if card.suit == trump.unwrap() && card.rank < highest_trump.rank {
+                //     println!("Trumped with lower card: {} < {}", card, highest_trump);
+                // }
                 Some(card)
 
             } else {
@@ -62,6 +74,7 @@ impl Player {
 
 #[derive(Debug, Clone)]
 pub struct Game {
+    pub seed: usize,
     pub players: Vec<Player>,
     n_players: usize,
     current_player: usize,
@@ -70,10 +83,20 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(n_players: usize, trump: Option<Suit>, rng: &mut ThreadRng, n_cards: usize) -> Self {
+    pub fn new(seed: usize, n_players: usize, trump: Option<Suit>, rng: &mut ThreadRng, player_cards: Vec<Card>) -> Self {
+        // if duplicate cards are found, panic
+        for i in 0..player_cards.len() {
+            for j in i+1..player_cards.len() {
+                if player_cards[i] == player_cards[j] {
+                    panic!("Duplicate cards found in player cards");
+                }
+            }
+        }
+
         let players = (0..n_players)
             .map(|i| Player::new(i)).collect();
         let mut game = Game {
+            seed,
             players,
             n_players,
             current_player: 0,
@@ -81,15 +104,17 @@ impl Game {
             played: false,
         };
 
-        let mut deck = all_cards();
+        let mut deck = create_deck(&player_cards);
         deck.shuffle(rng);
-        game.deal_cards(&mut deck, n_cards);
+        game.deal_remaining_players(&mut deck, player_cards.len());
+
+        game.players[0].hand = player_cards;
 
         game
     }
 
-    fn deal_cards(&mut self, deck: &mut Vec<Card>, n_cards: usize) {
-        for player in &mut self.players {
+    fn deal_remaining_players(&mut self, deck: &mut Vec<Card>, n_cards: usize) {
+        for player in &mut self.players.iter_mut().skip(1) {
             for _ in 0..n_cards {
                 if let Some(card) = deck.pop() {
                     player.add_card(card);
@@ -127,7 +152,7 @@ impl Game {
         }
     }
 
-    pub fn play_game(&mut self, starting_player: usize) {
+    pub fn play_game(&mut self, starting_player: usize, reshuffle: bool) {
         if self.played {
             panic!("Game has already been played");
         }
@@ -137,6 +162,13 @@ impl Game {
         // set starting positions
         for i in 0..self.n_players {
             self.players[(i + starting_player) % self.n_players].starting_position = i;
+        }
+
+        // reshuffle the player cards
+        if reshuffle {
+            for player in &mut self.players {
+                player.hand.shuffle(&mut rand::thread_rng());
+            }
         }
 
         while self.players.iter().any(|player| !player.hand.is_empty()) {

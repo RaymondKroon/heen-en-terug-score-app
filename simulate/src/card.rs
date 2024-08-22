@@ -1,3 +1,6 @@
+use std::fmt::Display;
+use colored::*;
+
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Hash)]
 pub enum Suit {
     Spades,
@@ -8,13 +11,25 @@ pub enum Suit {
 
 impl Suit {
     pub fn from_char(c: &str) -> Option<Self> {
-        match c.to_uppercase().as_str() {
-            "S" => Some(Suit::Spades),
-            "H" => Some(Suit::Hearts),
-            "D" => Some(Suit::Diamonds),
-            "C" => Some(Suit::Clubs),
+        match c.to_lowercase().as_str() {
+            "s" => Some(Suit::Spades),
+            "h" => Some(Suit::Hearts),
+            "d" => Some(Suit::Diamonds),
+            "c" => Some(Suit::Clubs),
             _ => None,
         }
+    }
+}
+
+impl Display for Suit {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        let suit_str = match self {
+            Suit::Spades => "♠".black(),
+            Suit::Hearts => "♥".red(),
+            Suit::Diamonds => "♦".blue(),
+            Suit::Clubs => "♣".green(),
+        };
+        write!(f, "{}", suit_str)
     }
 }
 
@@ -75,7 +90,7 @@ impl Card {
         }
 
 
-        let (suit_char, rank_str) = s.split_at(1);
+        let (rank_str, suit_char) = s.split_at(s.len() - 1);
         let suit = Suit::from_char(suit_char)?;
 
         let rank = Rank::from_str(rank_str)?;
@@ -100,20 +115,19 @@ impl Card {
             Rank::Ace => "A",
         };
 
-        let suit_str = match self.suit {
-            Suit::Spades => "S",
-            Suit::Hearts => "H",
-            Suit::Diamonds => "D",
-            Suit::Clubs => "C",
-        };
-
-        format!("{}{}", suit_str, rank_str)
+        format!("{}{}", rank_str, self.suit)
     }
 }
 
 
-pub fn all_cards() -> Vec<Card> {
-    let mut cards = Vec::with_capacity(52);
+impl Display for Card {
+    fn fmt(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {
+        write!(f, "{}", self.to_string())
+    }
+}
+
+pub fn create_deck(without: &Vec<Card>) -> Vec<Card> {
+    let mut cards = Vec::with_capacity(52 - without.len());
     for suit in [Suit::Spades, Suit::Hearts, Suit::Diamonds, Suit::Clubs].iter() {
         for rank in [
             Rank::Two,
@@ -132,10 +146,16 @@ pub fn all_cards() -> Vec<Card> {
         ]
             .iter()
         {
-            cards.push(Card {
+            let card = Card {
                 suit: *suit,
                 rank: *rank,
-            });
+            };
+
+            if without.contains(&card) {
+                continue;
+            }
+
+            cards.push(card);
         }
     }
     cards
@@ -157,4 +177,8 @@ pub fn highest_card(cards: &Vec<Card>, trump: Option<Suit>) -> Option<(usize, &C
         })
         .max_by_key(|&(_,item)| item);
     winner
+}
+
+pub fn create_hand_from_string(s: &str) -> Vec<Card> {
+    s.split_whitespace().map(|s| Card::from_string(s).unwrap()).collect()
 }
