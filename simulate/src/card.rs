@@ -1,4 +1,5 @@
 use std::fmt::Display;
+use std::str::FromStr;
 use colored::*;
 
 #[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Copy, Clone, Hash)]
@@ -18,6 +19,14 @@ impl Suit {
             "c" => Some(Suit::Clubs),
             _ => None,
         }
+    }
+}
+
+impl FromStr for Suit {
+    type Err = ();
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        Self::from_char(s).ok_or(())
     }
 }
 
@@ -168,7 +177,11 @@ pub fn highest_card(cards: &Vec<Card>, trump: Option<Suit>) -> Option<(usize, &C
         return None;
     }
 
-    let winning_suit = trump.or(cards.iter().next().map(|card| card.suit))?;
+    let winning_suit = match trump {
+        Some(suit) if {cards.iter().any(|c| c.suit == suit )} => suit,
+        _ => cards.first()?.suit,
+    };
+
     let winner = cards
         .iter()
         .enumerate()
