@@ -11,6 +11,7 @@
     import Shared from "./lib/Shared.svelte";
     import WinnerSplash from "./lib/WinnerSplash.svelte";
     import Countdown from "./lib/Countdown.svelte";
+    import Simulate from "./lib/Simulate.svelte";
 
     function handleMessage(event) {
         if (event.detail.type === 'play') {
@@ -85,6 +86,9 @@
             let id = parseInt(gameId);
             page = WinnerSplash;
             props = {id};
+        }
+        else if (path.startsWith('/simulate')){
+            page = Simulate;
         }
         else {
             window.location.href = '#/list';

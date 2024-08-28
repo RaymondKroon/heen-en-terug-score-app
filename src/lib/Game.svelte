@@ -182,6 +182,7 @@
         <h1>Stand <a href="#/list">↑</a>
             <a href="#" on:click|preventDefault={exportStandings}><span class="material-icons-outlined">share</span></a>
             {#if gameFinished}<a href="#/splash/{id}"><span class="material-icons-outlined">celebration</span></a>{/if}
+            <a href="#/simulate"><span class="material-icons-outlined">casino</span></a>
         </h1>
         <Leaderboard bind:this={leaderboard} zoom={true} entries={getStandings(id)}/>
     </div>
