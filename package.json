@@ -10,16 +10,16 @@
     "test": "vitest"
   },
   "dependencies": {
-    "canvas-confetti": "^1.9.2",
+    "canvas-confetti": "^1.9.3",
     "html-to-image": "^1.11.11",
     "js-base64": "^3.7.5",
     "long":  "5.2.3"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^2.5.3",
-    "svelte": "^4.2.9",
-    "vite": "^4.5.3",
-    "vitest": "1.2.2",
+    "@sveltejs/vite-plugin-svelte": "^3.1.2",
+    "svelte": "^4.2.19",
+    "vite": "^5.4.2",
+    "vitest": "2.0.5",
     "@wasm-tool/rollup-plugin-rust": "^2.4.2"
   }
 }
