@@ -1,4 +1,5 @@
 import serializer_wasm from "../../serializer/Cargo.toml";
+import simulate_wasm from "../../simulate/Cargo.toml";
 
 export const GAME_VERSION = 3;
 
@@ -181,4 +182,9 @@ export async function deserializeGame(serialized) {
     calculateScoresForGame(game);
 
     return game;
+}
+
+export async function simulateGame(input) {
+    let simulate = await simulate_wasm();
+    return simulate.simulate(input);
 }

@@ -1,8 +1,9 @@
 use std::collections::HashMap;
 use std::fmt::Display;
-use std::time::Instant;
+use web_time::Instant;
 use crate::card::{create_hand_from_string, Card, Suit};
 use crate::game::Game;
+use wasm_bindgen::prelude::*;
 
 
 // parse the input string and simulate the game
@@ -11,6 +12,7 @@ use crate::game::Game;
 // where 4p is the number of players, h is the trump suit, 2s 4s are the cards in the hand
 // the trump suit can be x for no trump
 // can also specify the duration of the simulation in seconds with the format "(n)s 4p h 2s 4s"
+#[wasm_bindgen]
 pub fn simulate(input: String) -> String {
     let parts: Vec<&str> = input.split_whitespace().collect();
     if parts.len() < 3 {
