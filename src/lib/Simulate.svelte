@@ -22,8 +22,8 @@
     function drawCharts(data) {
         // data looks like this: `{n_players: 5, starting_position: 0, tricks: 0, percentage: 82.2463768115942, count: 2497}`
 
-        const margin = {top: 20, right: 30, bottom: 40, left: 40};
-        const width = 800 - margin.left - margin.right;
+        const margin = {top: 20, right: 40, bottom: 40, left: 20};
+        const width = Math.min(window.innerWidth, 800) - margin.left - margin.right;
         const height = 400 - margin.top - margin.bottom;
 
         const svg = d3.select("#charts")
@@ -43,7 +43,11 @@
             .range([0, height])
             .padding(0.1);
 
-        const color = d3.scaleOrdinal(d3.schemeCategory10);
+        const color = d3.scaleOrdinal([
+            "#E69F00", "#56B4E9", "#009E73", "#F0E442",
+            "#0072B2", "#D55E00", "#CC79A7", "#999999",
+            "#F4A582", "#92C5DE", "#CA0020"
+        ]);
 
         // Create Axes
         const xAxis = svg.append("g")
@@ -126,21 +130,31 @@
         const thead = table.append("thead");
         const tbody = table.append("tbody");
 
-        // Append header row
+        // Get unique tricks
+        const uniqueTricks = [...new Set(data.map(d => d.tricks))];
+
+// Append header row
         thead.append("tr")
             .selectAll("th")
-            .data(["Position", "Simulations"])
+            .data(["Positie", ...uniqueTricks, "Simulaties"])
             .enter()
             .append("th")
             .text(d => d);
 
-        // Append data rows
+// Append data rows
         tbody.selectAll("tr")
             .data([...totalCounts])
             .enter()
             .append("tr")
             .selectAll("td")
-            .data(d => [d[0] + 1, d[1]])
+            .data(d => {
+                const percentages = uniqueTricks.map(trick => {
+                    const trickData = data.find(item => item.starting_position === d[0] && item.tricks === trick);
+                    return trickData ? trickData.percentage.toFixed(1) + "%" : "0%";
+                });
+                const totalCount = d[1];
+                return [d[0] + 1, ...percentages, totalCount];
+            })
             .enter()
             .append("td")
             .text(d => d);
@@ -148,9 +162,17 @@
 </script>
 
 <style>
-    :global(.chart) {
-        display: inline-block;
-        margin: 10px;
+
+    :global(.total-counts-table) {
+        margin-top: 20px;
+        border-collapse: collapse;
+        border: 1px solid black; /* Add border to the table */
+    }
+
+    :global(.total-counts-table th),
+    :global(.total-counts-table td) {
+        border: 1px solid black; /* Add border to table cells */
+        padding: 5px; /* Add padding to table cells */
     }
 </style>
 
@@ -159,7 +181,7 @@
     <input type="text" bind:value={$input}/>
     <button on:click={handleSimulate} disabled={$isLoading}>Simuleer</button>
     <div>
-        <h2>Result:</h2>
+        <h2>Resultaat:</h2>
         <div id="charts"></div>
     </div>
 </div>
