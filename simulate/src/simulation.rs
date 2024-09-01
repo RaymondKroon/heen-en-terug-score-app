@@ -1,10 +1,50 @@
 use std::collections::HashMap;
 use std::fmt::Display;
+use serde::{Serialize};
 use web_time::Instant;
 use crate::card::{create_hand_from_string, Card, Suit};
 use crate::game::Game;
 use wasm_bindgen::prelude::*;
 
+#[derive(Debug)]
+pub enum SimulateError {
+    Error(String),
+}
+
+impl Display for SimulateError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Self::Error(msg) => write!(f, "{}", msg)
+        }
+    }
+}
+
+impl <E>From<E> for SimulateError
+where E: std::error::Error {
+    fn from(e: E) -> Self {
+        SimulateError::Error(format!("{:?}", e))
+    }
+}
+
+impl Into<JsValue> for SimulateError {
+    fn into(self) -> JsValue {
+        JsValue::from_str(&self.to_string())
+    }
+}
+
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+pub fn simulate(input: String) -> Result<Vec<JsValue>, SimulateError> {
+    simulate_impl(input)?
+        .iter()
+        .map(|p| p.to_js_value())
+        .collect()
+}
+
+#[cfg(not(target_arch = "wasm32"))]
+pub fn simulate(input: String) -> Result<Vec<Probability>, SimulateError> {
+    simulate_impl(input)
+}
 
 // parse the input string and simulate the game
 // return the result as a string
@@ -12,11 +52,10 @@ use wasm_bindgen::prelude::*;
 // where 4p is the number of players, h is the trump suit, 2s 4s are the cards in the hand
 // the trump suit can be x for no trump
 // can also specify the duration of the simulation in seconds with the format "(n)s 4p h 2s 4s"
-#[wasm_bindgen]
-pub fn simulate(input: String) -> String {
+fn simulate_impl(input: String) -> Result<Vec<Probability>, SimulateError> {
     let parts: Vec<&str> = input.split_whitespace().collect();
     if parts.len() < 3 {
-        return "Invalid input".to_string();
+        return Err(SimulateError::Error("Invalid input".to_string()));
     }
 
     let mut duration = std::time::Duration::from_secs(2); // Default duration
@@ -30,7 +69,7 @@ pub fn simulate(input: String) -> String {
     }
 
     if parts.len() - start_index < 3 {
-        return "Invalid input".to_string();
+        return Err(SimulateError::Error("Invalid input".to_string()));
     }
 
     let n_players: usize = parts[start_index].trim_end_matches('p').parse().unwrap_or(0);
@@ -40,18 +79,12 @@ pub fn simulate(input: String) -> String {
     };
     let player_cards = create_hand_from_string(&parts[start_index + 2..].join(" "));
 
-    simulate_impl(n_players, trump, player_cards, duration)
-}
-
-
-fn simulate_impl(n_players: usize, trump: Option<Suit>, player_cards: Vec<Card>, duration: std::time::Duration) -> String {
-
     let mut rng = rand::thread_rng();
     let mut counts = HashMap::new();
 
     let start_time = Instant::now();
 
-    let mut i= 0;
+    let mut i = 0;
 
     while Instant::now().duration_since(start_time) < duration {
         let game = Game::new(i, n_players, trump, &mut rng, player_cards.clone());
@@ -70,11 +103,21 @@ fn simulate_impl(n_players: usize, trump: Option<Suit>, player_cards: Vec<Card>,
         i += 1;
     }
 
-    format_stats(&counts, &player_cards, n_players, trump)
+    Ok(calculate_probability(&counts, &player_cards, n_players, trump))
 }
 
-fn format_stats(counts: &HashMap<Stat, usize>, player_cards: &Vec<Card>, n_players: usize, trump: Option<Suit>) -> String {
+pub fn format_probabilities(probabilities: &Vec<Probability>) -> String {
     let mut result = String::new();
+    for p in probabilities {
+        result.push_str(&format!("Probabilities pos {}:\n", p.starting_position));
+        result.push_str(&format!(" {}: {:.2}%\n", p.tricks, p.percentage));
+        result.push_str(&format!("Simulations: {}\n", p.count));
+    }
+    result
+}
+
+fn calculate_probability(counts: &HashMap<Stat, usize>, player_cards: &Vec<Card>, n_players: usize, trump: Option<Suit>) -> Vec<Probability> {
+    let mut probabilities = Vec::new();
     let mut cards = player_cards.clone();
     cards.sort();
     for starting_position in 0..n_players {
@@ -102,15 +145,44 @@ fn format_stats(counts: &HashMap<Stat, usize>, player_cards: &Vec<Card>, n_playe
                 0.0
             };
 
-            result.push_str(&format!("{} prob.: {:.2}% (Total: {})\n", stat, percentage, count));
+            let prob = Probability {
+                n_players,
+                starting_position,
+                tricks: trick_count,
+                percentage,
+                count: *count,
+            };
+
+            probabilities.push(prob);
+
         }
-        result.push_str("\n");
     }
 
-    result
+    probabilities
 }
 
-#[derive(Debug, PartialEq, Eq, Hash)]
+
+#[derive(Debug, Serialize)]
+pub struct Probability {
+    pub n_players: usize,
+    pub starting_position: usize,
+    pub tricks: usize,
+    pub percentage: f64,
+    pub count: usize,
+}
+
+impl Probability {
+    #[cfg(target_arch = "wasm32")]
+    fn to_js_value(&self) -> Result<JsValue, SimulateError> {
+        let result = serde_wasm_bindgen::to_value(self);
+        match result {
+            Ok(value) => Ok(value),
+            Err(e) => Err(SimulateError::Error(format!("{:?}", e)))
+        }
+    }
+}
+
+#[derive(Debug, PartialEq, Eq, Hash, Clone)]
 pub struct Stat {
     cards: Vec<Card>,
     starting_position: usize,

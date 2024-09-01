@@ -1,7 +1,7 @@
-use simulate::simulation::{simulate};
+use simulate::simulation::{format_probabilities, simulate};
 
 fn main() {
-    let result = simulate("(5s) 5p x 2c 5h".to_string());
-    println!("{}", result);
+    let result = simulate("(3s) 5p c 2c 3c".to_string());
+    println!("{}", format_probabilities(&result.unwrap()));
 }
 

@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "canvas-confetti": "^1.9.3",
+    "d3": "^7.9.0",
     "html-to-image": "^1.11.11",
     "js-base64": "^3.7.5",
     "long":  "5.2.3"
