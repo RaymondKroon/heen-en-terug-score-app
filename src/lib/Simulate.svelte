@@ -114,6 +114,7 @@
         legend.selectAll("text")
             .data(legendItems)
             .enter().append("text")
+            .attr("fill", "currentColor")
             .attr("x", (d, i) => i * 100 + 24) // Arrange items horizontally
             .attr("y", 9)
             .attr("dy", ".35em")
@@ -166,12 +167,12 @@
     :global(.total-counts-table) {
         margin-top: 20px;
         border-collapse: collapse;
-        border: 1px solid black; /* Add border to the table */
+        border: 1px solid; /* Add border to the table */
     }
 
     :global(.total-counts-table th),
     :global(.total-counts-table td) {
-        border: 1px solid black; /* Add border to table cells */
+        border: 1px solid; /* Add border to table cells */
         padding: 5px; /* Add padding to table cells */
     }
 </style>
