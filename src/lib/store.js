@@ -216,6 +216,28 @@ export function currentRoundId(gameId) {
     return currentRoundForGame(game);
 }
 
+export function resetLastRoundScores(gameId) {
+    let game = getGame(gameId);
+    let roundId = currentRoundForGame(game);
+    let previousRoundId = roundId - 1;
+    if (previousRoundId >= 0) {
+        updatePlayerTricks(gameId, previousRoundId, []);
+        updatePlayerBids(gameId, previousRoundId, []);
+
+        // also reset current round bids if exist
+        if (roundId < game.rounds.length) {
+            updatePlayerBids(gameId, roundId, []);
+        }
+        calculateScores(gameId);
+    }
+}
+
+export function removeCurrentRoundBids(gameId) {
+    let game = getGame(gameId);
+    let roundId = currentRoundForGame(game);
+    updatePlayerBids(gameId, roundId, []);
+}
+
 export function getTotals() {
     const store = get(gameStore);
     let totals = store.games.reduce((acc, game) => {
