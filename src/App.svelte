@@ -12,16 +12,51 @@
     import WinnerSplash from "./lib/WinnerSplash.svelte";
     import Countdown from "./lib/Countdown.svelte";
     import Simulate from "./lib/Simulate.svelte";
+    import DisplayTrump from "./lib/DisplayTrump.svelte";
+    import ConfigPage from "./lib/ConfigPage.svelte";
+    import {get, writable} from "svelte/store";
+    import {getActiveConfig, getGame} from "./lib/store.js";
+    import P2PT from "./lib/p2pt.js";
+    import {currentRoundForGame, announce} from "./lib/lib.js";
 
-    function handleMessage(event) {
+    let trump = writable(null);
+
+    async function handleMessage(event) {
         if (event.detail.type === 'play') {
             const {id} = event.detail;
             window.location.href = `#/game/${id}`;
+        } else if (event.detail.type === 'game') {
+            console.log('broadcasting game', shareClient);
+            // await shareClient.requestMorePeers()
+            let game = event.detail.game;
+            trump.set(game.rounds[currentRoundForGame(game)].trump);
+            try {
+                for (const [peerId, peer] of Object.entries(shareClient.peers)) {
+                    try {
+                        if (Object.keys(peer).length !== 0) {
+                            for (const [key, value] of Object.entries(peer)) {
+                                console.log(key, value);
+                                await shareClient.send(value, {trump: get(trump)});
+                            }
+
+                        }
+                    } catch (e) {
+                    }
+                }
+            } catch (e) {
+                console.error(e);
+            }
         }
     }
 
     let page;
     let props;
+
+    const config = getActiveConfig();
+
+    let shareClient;
+
+    $: hash = window.location.hash;
 
     async function hashchange() {
         // the poor man's router!
@@ -33,7 +68,7 @@
         }
 
         if (path.startsWith('/game')) {
-            let id =  path.slice(6);
+            let id = path.slice(6);
             id = parseInt(id, 10);
             page = Game;
             props = {id};
@@ -53,8 +88,7 @@
             let round = parseInt(id_round.split('/')[1]);
             page = Countdown;
             props = {id, round};
-        }
-        else if (path.startsWith('/play')) {
+        } else if (path.startsWith('/play')) {
             let id_round = path.slice(6);
             let id = parseInt(id_round.split('/')[0]);
             let round = parseInt(id_round.split('/')[1]);
@@ -72,25 +106,26 @@
             let round = parseInt(id_round.split('/')[1]);
             page = EditRound;
             props = {id, round};
-        }
-        else if (path.startsWith('/stats')) {
+        } else if (path.startsWith('/stats')) {
             page = Stats;
-        }
-        else if (path.startsWith('/s/1')) {
+        } else if (path.startsWith('/s/1')) {
             let data = path.slice(5);
             page = Shared;
             props = {data};
-        }
-        else if (path.startsWith('/splash')) {
+        } else if (path.startsWith('/splash')) {
             let gameId = path.slice(8);
             let id = parseInt(gameId);
             page = WinnerSplash;
             props = {id};
-        }
-        else if (path.startsWith('/simulate')){
+        } else if (path.startsWith('/simulate')) {
             page = Simulate;
-        }
-        else {
+        } else if (path.startsWith('/trump')) {
+            let clientId = path.slice(7);
+            page = DisplayTrump;
+            props = {clientId};
+        } else if (path.startsWith('/config')) {
+            page = ConfigPage;
+        } else {
             window.location.href = '#/list';
         }
 
@@ -98,7 +133,33 @@
         else if (document.selection) {document.selection.empty();}
     }
 
-    onMount(hashchange);
+    onMount(() => {
+        hashchange();
+
+        shareClient = new P2PT(announce, `heen-en-weer-${$config.clientId}`);
+
+        shareClient.on('trackerconnect', (tracker, stats) => {
+        })
+
+        // If a new peer, send message
+        shareClient.on('peerconnect', (peer) => {
+            let trumpVal = get(trump);
+            if (!!trumpVal ) {
+                shareClient.send(peer, {trump: trumpVal});
+            }
+        })
+
+        // If message received from peer
+        shareClient.on('msg', (peer, msg) => {
+
+        })
+
+        if (!hash.includes("trump") && $config.shareGame) {
+            shareClient.start().then(() => {
+                console.log('P2PT started. My peer id : ' + shareClient._peerId)
+            })
+        }
+    });
 </script>
 
 <svelte:window on:hashchange={hashchange}/>

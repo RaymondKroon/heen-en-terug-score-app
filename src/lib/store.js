@@ -7,7 +7,7 @@ import {
     initialGame,
     initialRound,
     GAME_VERSION,
-    deserializeGame, serializeGame
+    deserializeGame, serializeGame, CONFIG_VERSION, generateRandomClientId
 } from "./lib.js";
 
 const localStorageKey = 'heen-en-weer-store';
@@ -26,6 +26,11 @@ const initialPlayer = {
 // Initial store state
 const initialStore = {
     games: [],
+    config: {
+        version: CONFIG_VERSION,
+        shareGame: false,
+        clientId: ''
+    }
 };
 
 // Create a writable store with initial store state
@@ -273,6 +278,38 @@ export function playersForLastGame() {
 // Reset the store state
 export function resetStore() {
     gameStore.set(initialStore);
+}
+
+const activeConfig = writable(initialStore.config);
+
+export function getConfig() {
+    let config =  get(gameStore).config;
+    if (!config) {
+        config = {
+            version: CONFIG_VERSION,
+            clientId: generateRandomClientId()
+        }
+
+        saveConfig(config);
+    }
+
+    activeConfig.set(config);
+
+    return config;
+}
+
+export function getActiveConfig() {
+    getConfig();
+    return activeConfig;
+}
+
+// Update the configuration
+export function saveConfig(newConfig) {
+    gameStore.update(store => {
+        store.config = { ...store.config, ...newConfig };
+        activeConfig.set(store.config);
+        return store;
+    });
 }
 
 export default gameStore;

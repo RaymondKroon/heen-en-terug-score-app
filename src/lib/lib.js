@@ -2,6 +2,15 @@ import serializer_wasm from "../../serializer/Cargo.toml";
 import simulate_wasm from "../../simulate/Cargo.toml";
 
 export const GAME_VERSION = 3;
+export const CONFIG_VERSION = 1;
+
+export const announce = [
+    'wss://tracker.btorrent.xyz',
+    'wss://tracker.webtorrent.dev',
+    'wss://tracker.openwebtorrent.com',
+    // 'wss://tracker.files.fm:7073/announce',
+    // 'wss://tracker.btorrent.xyz/',
+]
 
 export function initialGame(id, name) {
     return {
@@ -187,4 +196,14 @@ export async function deserializeGame(serialized) {
 export async function simulateGame(input) {
     let simulate = await simulate_wasm();
     return simulate.simulate(input);
+}
+
+export function generateRandomClientId() {
+    let n = 8;
+    const chars = '0123456789abcdefghijklmnopqrstuvwxyz';
+    let result = '';
+    for (let i = 0; i < n; i++) {
+        result += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return result;
 }

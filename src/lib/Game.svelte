@@ -4,8 +4,11 @@
     import Leaderboard from "./Leaderboard.svelte";
     import Trump from "./Trump.svelte";
     import { toBlob } from 'html-to-image';
+    import {createEventDispatcher, onMount} from "svelte";
 
     export let id;
+
+    const dispatch = createEventDispatcher();
 
     let leaderboard;
 
@@ -14,6 +17,13 @@
     let currentRound = getGame(id).rounds[currentRoundId];
 
     let game = getGame(id);
+    onMount(() => {
+        dispatch('message', {
+            type: 'game',
+            game
+        });
+    });
+
     let rounds = game.rounds;
     let gameFinished = isGameFinished(game);
 

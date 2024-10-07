@@ -1,0 +1,13 @@
+diff --git a/node_modules/bittorrent-tracker/index.js b/node_modules/bittorrent-tracker/index.js
+index e812c41..ca46c28 100644
+--- a/node_modules/bittorrent-tracker/index.js
++++ b/node_modules/bittorrent-tracker/index.js
+@@ -1,6 +1,7 @@
+ /*! bittorrent-tracker. MIT License. WebTorrent LLC <https://webtorrent.io/opensource> */
+ import Client from './client.js'
+ import Server from './server.js'
++import WebSocketTracker from './lib/client/websocket-tracker.js'
+ 
+ export default Client
+-export { Client, Server }
++export { Client, Server, WebSocketTracker }

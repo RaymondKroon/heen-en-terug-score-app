@@ -6,21 +6,27 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
+    "postinstall": "patch-package",
     "preview": "vite preview",
     "test": "vitest"
   },
   "dependencies": {
+    "bittorrent-tracker": "^11.1.2",
     "canvas-confetti": "^1.9.3",
     "d3": "^7.9.0",
     "html-to-image": "^1.11.11",
     "js-base64": "^3.7.5",
-    "long":  "5.2.3"
+    "long":  "5.2.3",
+    "uint8-util": "^2.2.5"
   },
   "devDependencies": {
+    "patch-package": "^8.0.0",
     "@sveltejs/vite-plugin-svelte": "^3.1.2",
+    "@rollup/plugin-node-resolve": "^15.3.0",
     "svelte": "^4.2.19",
     "vite": "^5.4.2",
     "vitest": "2.0.5",
+    "vite-plugin-node-polyfills": "^0.22.0",
     "@wasm-tool/rollup-plugin-rust": "^2.4.2"
   }
 }
