@@ -10,7 +10,7 @@
     }
 
     function getShareUrl() {
-        return `${window.location.origin}/#/trump/${clientId}`;
+        return `${window.location.origin}${window.location.pathname}#/trump/${clientId}`;
     }
 
     function regenerateClientId() {
