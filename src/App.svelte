@@ -12,14 +12,14 @@
     import WinnerSplash from "./lib/WinnerSplash.svelte";
     import Countdown from "./lib/Countdown.svelte";
     import Simulate from "./lib/Simulate.svelte";
-    import DisplayTrump from "./lib/DisplayTrump.svelte";
+    import Live from "./lib/Live.svelte";
     import ConfigPage from "./lib/ConfigPage.svelte";
     import {get, writable} from "svelte/store";
-    import {getActiveConfig, getGame} from "./lib/store.js";
+    import {getActiveConfig, shareGame} from "./lib/store.js";
     import P2PT from "./lib/p2pt.js";
-    import {currentRoundForGame, announce} from "./lib/lib.js";
+    import {announce} from "./lib/lib.js";
 
-    let trump = writable(null);
+    let serializedGame = writable(null);
 
     async function handleMessage(event) {
         if (event.detail.type === 'play') {
@@ -27,16 +27,14 @@
             window.location.href = `#/game/${id}`;
         } else if (event.detail.type === 'game') {
             console.log('broadcasting game', shareClient);
-            // await shareClient.requestMorePeers()
             let game = event.detail.game;
-            trump.set(game.rounds[currentRoundForGame(game)].trump);
+            serializedGame.set(await shareGame(game.id));
             try {
                 for (const [peerId, peer] of Object.entries(shareClient.peers)) {
                     try {
                         if (Object.keys(peer).length !== 0) {
                             for (const [key, value] of Object.entries(peer)) {
-                                console.log(key, value);
-                                await shareClient.send(value, {trump: get(trump)});
+                                await shareClient.send(value, {game: get(serializedGame)});
                             }
 
                         }
@@ -119,9 +117,9 @@
             props = {id};
         } else if (path.startsWith('/simulate')) {
             page = Simulate;
-        } else if (path.startsWith('/trump')) {
-            let clientId = path.slice(7);
-            page = DisplayTrump;
+        } else if (path.startsWith('/live')) {
+            let clientId = path.slice(6);
+            page = Live;
             props = {clientId};
         } else if (path.startsWith('/config')) {
             page = ConfigPage;
@@ -143,9 +141,9 @@
 
         // If a new peer, send message
         shareClient.on('peerconnect', (peer) => {
-            let trumpVal = get(trump);
-            if (!!trumpVal ) {
-                shareClient.send(peer, {trump: trumpVal});
+            let gameVal = get(serializedGame);
+            if (!!gameVal ) {
+                shareClient.send(peer, {game: gameVal});
             }
         })
 
@@ -156,7 +154,7 @@
 
         if (!hash.includes("trump") && $config.shareGame) {
             shareClient.start().then(() => {
-                console.log('P2PT started. My peer id : ' + shareClient._peerId)
+                // console.log('P2PT started. My peer id : ' + shareClient._peerId)
             })
         }
     });

@@ -3,11 +3,20 @@
     import Trump from "./Trump.svelte";
     import {LeaderboardEntry} from "./lib.js";
     import Leaderboard from "./Leaderboard.svelte";
+    import {createEventDispatcher, onMount} from "svelte";
 
     export let id;
     export let round;
     const game = getGame(id);
     const _round = game.rounds[round];
+
+    const dispatch = createEventDispatcher();
+    onMount(() => {
+        dispatch('message', {
+            type: 'game',
+            game
+        });
+    });
 
     const bidResult = _round.bids.reduce((a, b) => a + b) - _round.nCards
     let bidResultMessage = "";
