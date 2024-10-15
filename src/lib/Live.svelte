@@ -30,7 +30,6 @@
         client = new P2PT(announce, `heen-en-weer-${clientId}`);
 
         client.on('msg', async (peer, msg) => {
-            console.log(msg);
             let serializedGame = msg.game;
             game = await loadGame(serializedGame);
             players = game.players;
@@ -64,7 +63,7 @@
             <Trump size=8 suit="{round.trump}"/>
         </div>
 
-        {#if round.bids}
+        {#if round.bids !== undefined && round.bids.length > 0}
             <h2>Geboden</h2>
             <Leaderboard zoom={true}
                          entries={players.map(p => new LeaderboardEntry(p.name, round.bids[p.id], playerOptions(p)))}/>
