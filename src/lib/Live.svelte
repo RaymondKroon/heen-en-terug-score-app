@@ -15,6 +15,7 @@
     export let clientId = "";
     let client = undefined;
     let game = undefined;
+    let hasBids = false;
 
     function playerOptions(p) {
         if (p.id === starter_id)
@@ -31,6 +32,7 @@
 
         client.on('msg', async (peer, msg) => {
             let serializedGame = msg.game;
+            hasBids = msg.hasBids;
             game = await loadGame(serializedGame);
             players = game.players;
             roundId = currentRoundForGame(game);
@@ -63,7 +65,7 @@
             <Trump size=8 suit="{round.trump}"/>
         </div>
 
-        {#if round.bids !== undefined && round.bids.length > 0}
+        {#if hasBids}
             <h2>Geboden</h2>
             <Leaderboard zoom={true}
                          entries={players.map(p => new LeaderboardEntry(p.name, round.bids[p.id], playerOptions(p)))}/>

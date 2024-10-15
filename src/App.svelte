@@ -17,9 +17,10 @@
     import {get, writable} from "svelte/store";
     import {getActiveConfig, shareGame} from "./lib/store.js";
     import P2PT from "./lib/p2pt.js";
-    import {announce} from "./lib/lib.js";
+    import {announce, currentRoundForGame} from "./lib/lib.js";
 
     let serializedGame = writable(null);
+    let hasBids = false;
 
     async function handleMessage(event) {
         if (event.detail.type === 'play') {
@@ -29,12 +30,14 @@
             console.log('broadcasting game', shareClient);
             let game = event.detail.game;
             serializedGame.set(await shareGame(game.id));
+            let currentRound = currentRoundForGame(game);
+            hasBids = game.rounds[currentRound].bids.length > 0;
             try {
                 for (const [peerId, peer] of Object.entries(shareClient.peers)) {
                     try {
                         if (Object.keys(peer).length !== 0) {
                             for (const [key, value] of Object.entries(peer)) {
-                                await shareClient.send(value, {game: get(serializedGame)});
+                                await shareClient.send(value, {game: get(serializedGame), hasBids});
                             }
 
                         }
@@ -143,7 +146,7 @@
         shareClient.on('peerconnect', (peer) => {
             let gameVal = get(serializedGame);
             if (!!gameVal ) {
-                shareClient.send(peer, {game: gameVal});
+                shareClient.send(peer, {game: gameVal, hasBids});
             }
         })
 
