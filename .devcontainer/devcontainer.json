@@ -1,0 +1,21 @@
+{
+  "name": "Node.js and Rust Dev Container",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:0-18",
+  "features": {
+    "ghcr.io/devcontainers/features/rust:1": {
+      "targets": "wasm32-unknown-unknown"
+    }
+  },
+  "appPort": [5173],
+  "customizations": {
+    "vscode": {
+      "extensions": [
+      ],
+      "settings": {
+        "terminal.integrated.shell.linux": "/bin/bash"
+      }
+    }
+  },
+  "postCreateCommand": "npm install",
+  "remoteUser": "node"
+}
