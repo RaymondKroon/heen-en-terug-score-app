@@ -27,7 +27,6 @@
             const {id} = event.detail;
             window.location.href = `#/game/${id}`;
         } else if (event.detail.type === 'game') {
-            console.log('broadcasting game', shareClient);
             let game = event.detail.game;
             serializedGame.set(await shareGame(game.id));
             let currentRound = currentRoundForGame(game);
