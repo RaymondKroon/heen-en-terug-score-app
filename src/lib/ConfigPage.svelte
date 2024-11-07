@@ -9,6 +9,8 @@
         shareGame = false;
     }
 
+    let importFiles = [];
+
     function getShareUrl() {
         return `${window.location.origin}${window.location.pathname}#/live/${clientId}`;
     }
@@ -22,14 +24,15 @@
         saveConfig({shareGame});
     }
 
-    function handleExportAllGames() {
-        exportAllGames();
+    async function handleExportAllGames() {
+        await exportAllGames();
     }
 
-    function handleImportAllGames(event) {
-        const file = event.target.files[0];
+    async function handleImportAllGames() {
+        const file = importFiles[0];
         if (file) {
-            importAllGames(file);
+            await importAllGames(file);
+            window.location.href = "#/";
         }
     }
 </script>
@@ -51,8 +54,8 @@
         <input type="checkbox" bind:checked={shareGame} on:change={updateSharing}/>
     </div>
     <div style="display: flex; gap: 5px; flex-direction: row; align-items: baseline ">
-        <button on:click={handleExportAllGames}>Export All Games</button>
-        <input type="file" accept=".txt" on:change={handleImportAllGames}/>
+        <a href="#" on:click|preventDefault={handleExportAllGames}><span class="material-symbols-outlined">file_export</span></a>
+        <span>|</span><input type="file" accept=".txt" bind:files={importFiles} /><a href="#" on:click|preventDefault={handleImportAllGames}><span class="material-symbols-outlined">upload_file</span></a>
     </div>
 </main>
 
