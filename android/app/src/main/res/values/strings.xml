@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Heen en terug</string>
+    <string name="title_activity_main">Heen en terug</string>
+    <string name="package_name">nl.k3n.raymond.heenenterug</string>
+    <string name="custom_url_scheme">https://raymond.k3n.nl/heen-en-terug-score-app/</string>
+</resources>

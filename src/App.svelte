@@ -15,9 +15,10 @@
     import Live from "./lib/Live.svelte";
     import ConfigPage from "./lib/ConfigPage.svelte";
     import {get, writable} from "svelte/store";
-    import {getActiveConfig, shareGame} from "./lib/store.js";
+    import Store, {initStore} from "./lib/store.js";
     import P2PT from "./lib/p2pt.js";
     import {announce, currentRoundForGame} from "./lib/lib.js";
+    import {App} from "@capacitor/app";
 
     let serializedGame = writable(null);
     let hasBids = false;
@@ -28,7 +29,7 @@
             window.location.href = `#/game/${id}`;
         } else if (event.detail.type === 'game') {
             let game = event.detail.game;
-            serializedGame.set(await shareGame(game.id));
+            serializedGame.set(await Store().shareGame(game.id));
             let currentRound = currentRoundForGame(game);
             hasBids = game.rounds[currentRound].bids.length > 0;
             try {
@@ -52,9 +53,11 @@
     let page;
     let props;
 
-    const config = getActiveConfig();
+    let config;
 
     let shareClient;
+
+    let launchUrl;
 
     $: hash = window.location.hash;
 
@@ -63,7 +66,11 @@
         const path = window.location.hash.slice(1);
 
         if (!path) {
-            window.location.href = '#/list';
+            if (launchUrl && launchUrl.url) {
+                window.location.href = new URL(launchUrl.url).hash;
+            } else {
+                window.location.href = '#/list';
+            }
             return;
         }
 
@@ -129,12 +136,24 @@
             window.location.href = '#/list';
         }
 
-        if (window.getSelection) {window.getSelection().removeAllRanges();}
-        else if (document.selection) {document.selection.empty();}
+        if (window.getSelection) {
+            window.getSelection().removeAllRanges();
+        } else if (document.selection) {
+            document.selection.empty();
+        }
     }
 
-    onMount(() => {
-        hashchange();
+    onMount(async () => {
+
+        await App.addListener('appUrlOpen', async (data) => {
+            window.location.href = new URL(data.url).hash;
+        });
+
+        launchUrl = await App.getLaunchUrl();
+
+        await initStore();
+        config = Store().getActiveConfig();
+        await hashchange();
 
         shareClient = new P2PT(announce, `heen-en-weer-${$config.clientId}`);
 
@@ -144,7 +163,7 @@
         // If a new peer, send message
         shareClient.on('peerconnect', (peer) => {
             let gameVal = get(serializedGame);
-            if (!!gameVal ) {
+            if (!!gameVal) {
                 shareClient.send(peer, {game: gameVal, hasBids});
             }
         })
@@ -165,7 +184,7 @@
 <svelte:window on:hashchange={hashchange}/>
 
 <main>
-    <svelte:component this={page} {...props} on:message={handleMessage} />
+    <svelte:component this={page} {...props} on:message={handleMessage}/>
 </main>
 
 <style>

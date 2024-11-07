@@ -1,21 +1,14 @@
 <script>
-    import {
-        calculateScores,
-        currentRoundId,
-        getGame, removeCurrentRoundBids,
-        resetLastRoundScores,
-        updatePlayerBids,
-        updatePlayerTricks
-    } from './store.js';
+    import Store from './store.js';
     import NumberInput from "./NumberInput.svelte";
 
     export let id;
     export let round;
-    const game = getGame(id);
+    const game = Store().getGame(id);
     const _round = game.rounds[round];
 
-    const isLastPlayedRound = currentRoundId(id) === (round + 1)
-    const isCurrentRound = currentRoundId(id) === round;
+    const isLastPlayedRound = Store().currentRoundId(id) === (round + 1)
+    const isCurrentRound = Store().currentRoundId(id) === round;
 
     const players = game.players;
 
@@ -25,25 +18,25 @@
 
     function save() {
         if (hasBids) {
-            updatePlayerBids(id, round, _round.bids);
+            Store().updatePlayerBids(id, round, _round.bids);
         }
         if (hasResult) {
-            updatePlayerTricks(id, round, _round.tricks);
+            Store().updatePlayerTricks(id, round, _round.tricks);
         }
-        calculateScores(id);
+        Store().calculateScores(id);
         location.href = `#/game/${id}`;
     }
 
     function resetRound() {
         if (confirm("Weet je zeker dat je de ronde wilt herspelen? Dit kan niet ongedaan worden gemaakt.")) {
-            resetLastRoundScores(id);
+            Store().resetLastRoundScores(id);
             location.href = `#/game/${id}`;
         }
     }
 
     function removeBids() {
         if (confirm("Weet je zeker dat je de biedingen wilt verwijderen? Dit kan niet ongedaan worden gemaakt.")) {
-            removeCurrentRoundBids(id);
+            Store().removeCurrentRoundBids(id);
             location.href = `#/game/${id}`;
         }
     }

@@ -1,10 +1,10 @@
 <script>
-    import {calculateScores, getGame, updatePlayerTricks} from './store.js';
+    import Store from './store.js';
     import NumberInput from "./NumberInput.svelte";
 
     export let id;
     export let round;
-    const game = getGame(id);
+    const game = Store().getGame(id);
     const _round = game.rounds[round];
 
     const players = game.players;
@@ -13,8 +13,8 @@
     const tricks = Array(players.length).fill(0);
 
     function save() {
-        updatePlayerTricks(id, round, tricks)
-        calculateScores(id);
+        Store().updatePlayerTricks(id, round, tricks)
+        Store().calculateScores(id);
         location.href = `#/game/${id}`;
     }
 </script>

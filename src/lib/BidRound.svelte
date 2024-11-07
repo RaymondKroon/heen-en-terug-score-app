@@ -1,10 +1,10 @@
 <script>
-    import {getGame, updatePlayerBids} from './store.js';
+    import Store from './store.js';
     import Trump from "./Trump.svelte";
     import NumberInput from "./NumberInput.svelte";
     export let id;
     export let round;
-    const game = getGame(id);
+    const game = Store().getGame(id);
     const _round = game.rounds[round];
 
     const players = game.players;
@@ -25,7 +25,7 @@
     }
 
     function save() {
-        updatePlayerBids(id, round, bids)
+        Store().updatePlayerBids(id, round, bids)
         location.href = `#/play/${id}/${round}`;
     }
 </script>

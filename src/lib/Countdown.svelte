@@ -1,6 +1,6 @@
 <script lang="js">
 
-    import {getGame, getStandings, listPlayers} from "./store.js";
+    import Store from "./store.js";
     import Trump from "./Trump.svelte";
     import {onMount} from "svelte";
     import Leaderboard from "./Leaderboard.svelte";
@@ -8,10 +8,10 @@
 
     export let id;
     export let round;
-    const game = getGame(id);
+    const game = Store().getGame(id);
     const _round = game.rounds[round];
 
-    let players = listPlayers(id);
+    let players = Store().listPlayers(id);
 
     let dealer = players[_round.dealerId].name;
     let starter = players[(_round.dealerId + 1) % players.length].name;
@@ -107,7 +107,7 @@
     {#if slide === 3}
 
         <div class="info">
-            <Leaderboard entries={getStandings(id)} zoom=true />
+            <Leaderboard entries={Store().getStandings(id)} zoom=true />
         </div>
     {/if}
 

@@ -1,11 +1,11 @@
 <script>
     import { onMount } from 'svelte';
-    import {addGame, addPlayer, addRound, allPlayerNames, gameExists, playersForLastGame} from './store.js';
+    import Store from './store.js';
     import { TRUMPS } from './lib.js';
     let players = [];
 
-    const allNames = allPlayerNames();
-    const lastGameNames = playersForLastGame();
+    const allNames = Store().allPlayerNames();
+    const lastGameNames = Store().playersForLastGame();
     let active = 0;
 
     onMount(async () => {
@@ -23,7 +23,7 @@
     }
 
     async function rematch() {
-        const lastGamePlayers = playersForLastGame();
+        const lastGamePlayers = Store().playersForLastGame();
         const confirmation = confirm(`Rematch: ${lastGamePlayers.join(', ')}?`);
         if (confirmation) {
             players = lastGamePlayers;
@@ -52,26 +52,26 @@
         const id = Date.now();
         const name = new Date(id).toLocaleString('nl-NL');
 
-        if (gameExists(id)) {
+        if (Store().gameExists(id)) {
             console.log('game exists, TODO');
             return;
         }
 
         // Add the game
-        addGame(id, name);
+        Store().addGame(id, name);
         let nPlayers = 0
         for (let i = 0; i < players.length; i++) {
             if (players[i] === '') {
                 continue;
             }
             nPlayers++;
-            addPlayer(id, players[i]);
+            Store().addPlayer(id, players[i]);
         }
 
         let cardsPerRound = [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10];
         let dealer = getRandomInt(nPlayers);
         cardsPerRound.forEach((cards, _) => {
-            addRound(id, cards, random_trump(), dealer);
+            Store().addRound(id, cards, random_trump(), dealer);
             dealer = (dealer + 1) % nPlayers;
         });
 

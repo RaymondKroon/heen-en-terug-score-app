@@ -1,8 +1,8 @@
 <script>
-    import {getConfig, saveConfig} from './store.js';
+    import Store from './store.js';
     import {generateRandomClientId} from "./lib.js";
 
-    let config = getConfig();
+    let config = Store().getConfig();
     let clientId = config.clientId;
     let shareGame = config.shareGame;
     if (shareGame === undefined) {
@@ -15,11 +15,11 @@
 
     function regenerateClientId() {
         clientId = generateRandomClientId();
-        saveConfig({clientId});
+        Store().saveConfig({clientId});
     }
 
     function updateSharing() {
-        saveConfig({shareGame});
+        Store().saveConfig({shareGame});
     }
 </script>
 

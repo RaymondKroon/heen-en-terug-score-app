@@ -1,11 +1,11 @@
 <script lang="js">
     import confetti from "canvas-confetti";
-    import {getGame} from "./store.js";
+    import Store from "./store.js";
     import {onMount} from "svelte";
     import {getWinners} from "./lib.js";
     export let id;
 
-    const game = getGame(id);
+    const game = Store().getGame(id);
     const winners = getWinners(game);
 
     var duration = 15 * 1000;

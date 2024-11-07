@@ -1,9 +1,9 @@
 <script>
-import {getTotals} from "./store.js";
+import Store from "./store.js";
 import {LeaderboardEntry} from "./lib.js";
 import Leaderboard from "./Leaderboard.svelte";
 
-let playerTotals = getTotals();
+let playerTotals = Store().getTotals();
 let totals = playerTotals.sort((a, b) => b.score - a.score);
 let average = playerTotals.map((t) => ({...t, score: (t.score/t.games).toFixed(1)})).sort((a, b) => b.score - a.score);
 

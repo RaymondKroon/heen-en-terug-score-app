@@ -1,5 +1,5 @@
 <script>
-    import {currentRoundId as _currentRoundId, getGame, getStandings, listPlayers, shareGame} from './store.js';
+    import Store from './store.js';
     import {isGameFinished, TRUMPS_SHORT} from "./lib.js";
     import Leaderboard from "./Leaderboard.svelte";
     import Trump from "./Trump.svelte";
@@ -12,11 +12,11 @@
 
     let leaderboard;
 
-    let players = listPlayers(id);
-    let currentRoundId = _currentRoundId(id);
-    let currentRound = getGame(id).rounds[currentRoundId];
+    let players = Store().listPlayers(id);
+    let currentRoundId = Store().currentRoundId(id);
+    let currentRound = Store().getGame(id).rounds[currentRoundId];
 
-    let game = getGame(id);
+    let game = Store().getGame(id);
     onMount(() => {
         dispatch('message', {
             type: 'game',
@@ -61,7 +61,7 @@
             let blob = await toBlob(node, {filter: filter, backgroundColor: bgColor})
 
             if (navigator.canShare) {
-                let gameData = await shareGame(id);
+                let gameData = await Store().shareGame(id);
                 const data = {
                     url: '#/s/1/' + gameData,
                     files: [
@@ -194,7 +194,7 @@
             {#if gameFinished}<a href="#/splash/{id}"><span class="material-icons-outlined">celebration</span></a>{/if}
             <a href="#/simulate"><span class="material-icons-outlined">casino</span></a>
         </h1>
-        <Leaderboard bind:this={leaderboard} zoom={true} entries={getStandings(id)}/>
+        <Leaderboard bind:this={leaderboard} zoom={true} entries={Store().getStandings(id)}/>
     </div>
 
     {#if currentRound}

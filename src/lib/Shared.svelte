@@ -1,5 +1,5 @@
 <script>
-    import {getStandingsForGame, loadGame, importGame as _importGame} from "./store.js";
+    import Store, {getStandingsForGame, loadGame} from "./store.js";
     import Leaderboard from "./Leaderboard.svelte";
     import { onMount } from 'svelte';
     import {TRUMPS_SHORT} from "./lib.js";
@@ -17,7 +17,7 @@
     });
 
     function importGame() {
-        let id = _importGame(game);
+        let id = Store().importGame(game);
         window.location.hash = '#/game/' + id;
     }
 

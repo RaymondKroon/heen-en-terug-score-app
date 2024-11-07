@@ -1,6 +1,6 @@
 <script>
-    import { createEventDispatcher } from 'svelte';
-    import { deleteGame as _deleteGame, listGames } from './store.js';
+    import {createEventDispatcher} from 'svelte';
+    import Store from './store.js';
     import {calculateGameEarnings, isGameFinished} from "./lib.js";
 
     export let id = -1; // not using, prevent error on browser back button
@@ -8,7 +8,7 @@
 
     const dispatch = createEventDispatcher();
 
-    let games = listGames();
+    let games = Store().listGames();
     let selectedGames = [];
     let modal = false;
 
@@ -21,8 +21,8 @@
         if (!confirm('Weet je zeker dat je dit spel wilt verwijderen?')) {
             return;
         }
-        _deleteGame(id);
-        games = listGames();
+        Store().deleteGame(id);
+        games = Store().listGames();
     }
 
     function playGame(id) {
@@ -86,7 +86,6 @@
         selectedGames = [];
         modal = false;
     }
-
 </script>
 
 <style>
@@ -152,7 +151,7 @@
 
 </style>
 
-<h1>Heen en terug <a href="#/config"><span class="material-icons-outlined">settings</span></a></h1>
+<h1>Heen en terug<a href="#/config"><span class="material-icons-outlined">settings</span></a></h1>
 
 <div class="list">
     {#each games as game (game.id)}
