@@ -25,7 +25,13 @@
     }
 
     async function handleExportAllGames() {
-        await exportAllGames();
+        let blob = await exportAllGames();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'all_games.txt';
+        a.click();
+        URL.revokeObjectURL(url);
     }
 
     async function handleImportAllGames() {

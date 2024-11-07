@@ -318,13 +318,7 @@ export async function exportAllGames() {
         const serialized = await serializeGame(game);
         return Base64.fromUint8Array(serialized, true);
     }));
-    const blob = new Blob([serializedGames.join('\n')], { type: 'text/plain' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = 'all_games.txt';
-    a.click();
-    URL.revokeObjectURL(url);
+    return new Blob([serializedGames.join('\n')], { type: 'text/plain' });
 }
 
 export async function importAllGames(file) {
