@@ -312,4 +312,32 @@ export function saveConfig(newConfig) {
     });
 }
 
+export async function exportAllGames() {
+    const store = get(gameStore);
+    const serializedGames = await Promise.all(store.games.map(async (game) => {
+        const serialized = await serializeGame(game);
+        return Base64.fromUint8Array(serialized, true);
+    }));
+    const blob = new Blob([serializedGames.join('\n')], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'all_games.txt';
+    a.click();
+    URL.revokeObjectURL(url);
+}
+
+export async function importAllGames(file) {
+    const text = await file.text();
+    const serializedGames = text.split('\n');
+    const games = await Promise.all(serializedGames.map(async (serialized) => {
+        const game = await deserializeGame(Base64.toUint8Array(serialized));
+        return game;
+    }));
+    gameStore.update(store => {
+        store.games = [...store.games, ...games];
+        return store;
+    });
+}
+
 export default gameStore;
