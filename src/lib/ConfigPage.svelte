@@ -1,5 +1,5 @@
 <script>
-    import {getConfig, saveConfig} from './store.js';
+    import {getConfig, saveConfig, exportAllGames, importAllGames} from './store.js';
     import {generateRandomClientId} from "./lib.js";
 
     let config = getConfig();
@@ -8,6 +8,8 @@
     if (shareGame === undefined) {
         shareGame = false;
     }
+
+    let importFiles = [];
 
     function getShareUrl() {
         return `${window.location.origin}${window.location.pathname}#/live/${clientId}`;
@@ -20,6 +22,24 @@
 
     function updateSharing() {
         saveConfig({shareGame});
+    }
+
+    async function handleExportAllGames() {
+        let blob = await exportAllGames();
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'all_games.txt';
+        a.click();
+        URL.revokeObjectURL(url);
+    }
+
+    async function handleImportAllGames() {
+        const file = importFiles[0];
+        if (file) {
+            await importAllGames(file);
+            window.location.href = "#/";
+        }
     }
 </script>
 
@@ -38,6 +58,10 @@
             Deel spel:
         </label>
         <input type="checkbox" bind:checked={shareGame} on:change={updateSharing}/>
+    </div>
+    <div style="display: flex; gap: 5px; flex-direction: row; align-items: baseline ">
+        <a href="#" on:click|preventDefault={handleExportAllGames}><span class="material-symbols-outlined">file_export</span></a>
+        <span>|</span><input type="file" accept=".txt" bind:files={importFiles} /><a href="#" on:click|preventDefault={handleImportAllGames}><span class="material-symbols-outlined">upload_file</span></a>
     </div>
 </main>
 
