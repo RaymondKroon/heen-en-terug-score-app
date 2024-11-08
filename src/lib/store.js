@@ -80,7 +80,7 @@ export function getGame(gameId) {
     let game = _getGameFromId(store, gameId)
     if (game.gameVersion === undefined || game.gameVersion < GAME_VERSION) {
         calculateScoresForGame(game);
-        if (game.gameVersion < 2 || typeof(game.rounds[0].trump) == "string") {
+        if (game.gameVersion < 2) {
             migrateTrumps(game);
         }
         if (game.gameVersion < 3) {
@@ -317,6 +317,10 @@ export async function exportAllGames() {
     let exportResults = [];
     const serializedGames = await Promise.all(store.games.map(async (game) => {
         try {
+            // fix trump migration
+            migrateTrumps(game);
+            saveGame(game.id, game);
+
             const serialized = await serializeGame(game);
             exportResults.push({id: game.id, version: game.gameVersion, error: null});
             return Base64.fromUint8Array(serialized, true);
