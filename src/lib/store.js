@@ -317,6 +317,8 @@ export async function exportAllGames() {
     let exportResults = [];
     const serializedGames = await Promise.all(store.games.map(async (game) => {
         try {
+            //fix missing gameVersion
+            game.gameVersion = GAME_VERSION;
             // fix trump migration
             migrateTrumps(game);
             // fix dealer migration
