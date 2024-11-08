@@ -314,11 +314,20 @@ export function saveConfig(newConfig) {
 
 export async function exportAllGames() {
     const store = get(gameStore);
+    let exportResults = [];
     const serializedGames = await Promise.all(store.games.map(async (game) => {
-        const serialized = await serializeGame(game);
-        return Base64.fromUint8Array(serialized, true);
+        try {
+            const serialized = await serializeGame(game);
+            exportResults.push({id: game.id, error: null});
+            return Base64.fromUint8Array(serialized, true);
+        } catch (e) {
+            exportResults.push({id: game.id, error: e});
+            return null;
+        }
+
+
     }));
-    return new Blob([serializedGames.join('\n')], { type: 'text/plain' });
+    return {results: exportResults, data: new Blob([serializedGames.filter(g => g !== null).join('\n')], {type: 'text/plain'})};
 }
 
 export async function importAllGames(file) {

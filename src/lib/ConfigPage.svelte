@@ -10,6 +10,7 @@
     }
 
     let importFiles = [];
+    let exportResults;
 
     function getShareUrl() {
         return `${window.location.origin}${window.location.pathname}#/live/${clientId}`;
@@ -25,8 +26,9 @@
     }
 
     async function handleExportAllGames() {
-        let blob = await exportAllGames();
-        const url = URL.createObjectURL(blob);
+        let {data, results} = await exportAllGames();
+        exportResults = results;
+        const url = URL.createObjectURL(data);
         const a = document.createElement('a');
         a.href = url;
         a.download = 'all_games.txt';
@@ -63,6 +65,14 @@
         <a href="#" on:click|preventDefault={handleExportAllGames}><span class="material-symbols-outlined">file_export</span></a>
         <span>|</span><input type="file" accept=".txt" bind:files={importFiles} /><a href="#" on:click|preventDefault={handleImportAllGames}><span class="material-symbols-outlined">upload_file</span></a>
     </div>
+    {#if exportResults}
+        <div>
+            {#each exportResults as result}
+                <div><span>{result.id}</span>
+                <span>{result.error}</span></div>
+            {/each}
+        </div>
+    {/if}
 </main>
 
 <style>
