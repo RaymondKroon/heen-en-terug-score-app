@@ -318,10 +318,10 @@ export async function exportAllGames() {
     const serializedGames = await Promise.all(store.games.map(async (game) => {
         try {
             const serialized = await serializeGame(game);
-            exportResults.push({id: game.id, error: null});
+            exportResults.push({id: game.id, version: game.gameVersion, error: null});
             return Base64.fromUint8Array(serialized, true);
         } catch (e) {
-            exportResults.push({id: game.id, error: e});
+            exportResults.push({id: game.id, version: game.gameVersion, error: e});
             return null;
         }
 

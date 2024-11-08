@@ -69,6 +69,7 @@
         <div>
             {#each exportResults as result}
                 <div><span>{result.id}</span>
+                    <span>{result.version}</span>
                 <span>{result.error}</span></div>
             {/each}
         </div>
