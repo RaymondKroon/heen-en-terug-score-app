@@ -319,6 +319,8 @@ export async function exportAllGames() {
         try {
             // fix trump migration
             migrateTrumps(game);
+            // fix dealer migration
+            migrateDealerId(game);
             saveGame(game.id, game);
 
             const serialized = await serializeGame(game);
