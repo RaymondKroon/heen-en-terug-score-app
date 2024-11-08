@@ -18,7 +18,11 @@ export function migrateTrumps(game) {
 export function migrateDealerId(game) {
     game.rounds.forEach(round => {
         if (round.dealerId === undefined) {
-            round.dealerId = round.dealer_id;
+            let dealerId = round.dealer_id;
+            if (dealerId === undefined) {  // failsafe.
+                dealerId = 0;
+            }
+            round.dealerId = dealerId;
             delete round.dealer_id;
         }
     })
