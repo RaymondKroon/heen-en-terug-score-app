@@ -68,9 +68,11 @@
     {#if exportResults}
         <div>
             {#each exportResults as result}
-                <div><span>{result.id}</span>
-                    <span>{result.version}</span>
+                {#if result.error}
+                <div><span>{result.game.id}</span>
+                    <span>{JSON.stringify(result.game, null, 2)}</span>
                 <span>{result.error}</span></div>
+                {/if}
             {/each}
         </div>
     {/if}

@@ -326,10 +326,10 @@ export async function exportAllGames() {
             saveGame(game.id, game);
 
             const serialized = await serializeGame(game);
-            exportResults.push({id: game.id, version: game.gameVersion, error: null});
+            exportResults.push({game, error: null});
             return Base64.fromUint8Array(serialized, true);
         } catch (e) {
-            exportResults.push({id: game.id, version: game.gameVersion, error: e});
+            exportResults.push({game, error: e});
             return null;
         }
 
