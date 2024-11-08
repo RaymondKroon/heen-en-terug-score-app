@@ -80,7 +80,7 @@ export function getGame(gameId) {
     let game = _getGameFromId(store, gameId)
     if (game.gameVersion === undefined || game.gameVersion < GAME_VERSION) {
         calculateScoresForGame(game);
-        if (game.gameVersion < 2) {
+        if (game.gameVersion < 2 || typeof(game.rounds[0].trump) == "string") {
             migrateTrumps(game);
         }
         if (game.gameVersion < 3) {
