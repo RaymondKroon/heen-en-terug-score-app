@@ -152,7 +152,7 @@
 
 </style>
 
-<h1>Heen en terug <a href="#/config"><span class="material-icons-outlined">settings</span></a></h1>
+<h1>Heen en terug <a href="#/config"><span class="material-icons-outlined">settings</span></a><a href="#/stats"><span class="material-icons-outlined">insights</span></a></h1>
 
 <div class="list">
     {#each games as game (game.id)}
