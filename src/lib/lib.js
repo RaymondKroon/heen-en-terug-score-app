@@ -163,6 +163,20 @@ export function getLosers(game) {
     return players.filter(player => player.score === lowestScore).map(player => player.name);
 }
 
+export function getTotals(games) {
+    let totals = games.reduce((acc, game) => {
+        game.players.forEach(player => {
+            if (!acc[player.name]) {
+                acc[player.name] = { name: player.name, score: 0, games: 0 };
+            }
+            acc[player.name].score += player.score;
+            acc[player.name].games += 1;
+        });
+        return acc;
+    }, {})
+    return Object.values(totals);
+}
+
 export const TRUMPS = {
     SPADES: 0,
     HEARTS: 1,

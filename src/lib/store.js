@@ -243,21 +243,6 @@ export function removeCurrentRoundBids(gameId) {
     updatePlayerBids(gameId, roundId, []);
 }
 
-export function getTotals() {
-    const store = get(gameStore);
-    let totals = store.games.reduce((acc, game) => {
-        game.players.forEach(player => {
-            if (!acc[player.name]) {
-                acc[player.name] = { name: player.name, score: 0, games: 0 };
-            }
-            acc[player.name].score += player.score;
-            acc[player.name].games += 1;
-        });
-        return acc;
-    }, {})
-    return Object.values(totals);
-}
-
 export function allPlayerNames() {
     const store = get(gameStore);
     let names = new Set();
