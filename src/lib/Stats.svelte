@@ -59,15 +59,19 @@
     function prepareHistogramData(filteredGames) {
         let playerData = {};
         filteredGames.forEach(game => {
-            game.players.filter(p => selectedPlayerNames.has(p.name) ).forEach(player => {
+            game.players.filter(p => selectedPlayerNames.has(p.name)).forEach(player => {
                 if (!playerData[player.name]) {
                     playerData[player.name] = {};
                 }
                 let place = player.leaderBoardPosition;
+                let playerCount = game.players.length;
                 if (!playerData[player.name][place]) {
-                    playerData[player.name][place] = 0;
+                    playerData[player.name][place] = {};
                 }
-                playerData[player.name][place]++;
+                if (!playerData[player.name][place][playerCount]) {
+                    playerData[player.name][place][playerCount] = 0;
+                }
+                playerData[player.name][place][playerCount]++;
             });
         });
 
@@ -88,14 +92,26 @@
         ];
 
         let datasets = Object.keys(playerData).map((playerName, index) => {
+            let data = labels.map(label => {
+                let playerCounts = playerData[playerName][label] || {};
+                return Object.keys(playerCounts).map(count => ({
+                    x: label,
+                    y: playerCounts[count],
+                    playerCount: count
+                }));
+            }).flat();
+
             return {
                 label: playerName,
-                data: labels.map(label => playerData[playerName][label] || 0),
+                data: data,
                 backgroundColor: colors[index % colors.length],
                 borderColor: colors[index % colors.length].replace('0.2', '1'),
                 borderWidth: 1
             };
         });
+
+        // Sort datasets by player name
+        datasets.sort((a, b) => a.label.localeCompare(b.label));
 
         return {
             labels: labels,
