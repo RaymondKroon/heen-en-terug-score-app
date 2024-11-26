@@ -73,6 +73,8 @@
 
     function prepareHistogramData(filteredGames, playerName) {
     let playerData = {};
+    let playerTotalGames = {};
+
     filteredGames.forEach(game => {
         game.players.filter(p => p.name === playerName).forEach(player => {
             let place = player.leaderBoardPosition;
@@ -84,6 +86,10 @@
                 playerData[place][gameSize] = 0;
             }
             playerData[place][gameSize]++;
+            if (!playerTotalGames[gameSize]) {
+                playerTotalGames[gameSize] = 0;
+            }
+            playerTotalGames[gameSize]++;
         });
     });
 
@@ -123,7 +129,7 @@
         });
 
         return {
-            label: `${count} players`,
+            label: `${count} speler (${playerTotalGames[count] || 0} spellen)`,
             data: data,
             backgroundColor: colors[index % colors.length],
             borderColor: colors[index % colors.length].replace('0.2', '1'),
