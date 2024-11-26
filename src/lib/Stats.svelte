@@ -62,7 +62,6 @@
 
         filteredTotals = filteredTotals.filter(t => selectedPlayerNames.has(t.name));
 
-        // Calculate average score per game size
         let scorePerGameSize = {};
         highestScores = {};
         lowestScores = {};
@@ -288,10 +287,6 @@
             <div>{highestLosingScores[size]?.score}</div>
             <div>{highestLosingScores[size]?.player}</div>
             <div><a href="#/game/{highestLosingScores[size]?.game}">Bekijk spel</a></div>
-<!--            <div>Hoogste gemiddelde score</div>-->
-<!--            <div>{highestAverageScores[size]}</div>-->
-<!--            <div>Laagste gemiddelde score</div>-->
-<!--            <div>{lowestAverageScores[size]}</div>-->
         </div>
     {/each}
 
