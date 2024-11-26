@@ -1,5 +1,5 @@
 <script>
-    import {listGames} from "./store.js";
+    import {listGames, saveConfig, getConfig} from "./store.js";
     import {getTotals, LeaderboardEntry} from "./lib.js";
     import Leaderboard from "./Leaderboard.svelte";
     import { onMount } from 'svelte';
@@ -21,9 +21,20 @@
     let playerNames = [...new Set(games.flatMap(game => game.players.map(player => player.name)))];
     playerNames.sort();
 
+
     let selectedPlayerCounts = new Set(playerCounts);
     let selectedPlayerNames = new Set(playerNames);
     let playersInGames = new Set(playerNames);
+
+    const config = getConfig().checkboxConfig;
+
+    if (config !== undefined) {
+        selectedPlayerCounts = new Set(config.selectedPlayerCounts);
+        selectedPlayerNames = new Set(config.selectedPlayerNames);
+        playersInGames = new Set(config.playersInGames);
+    }
+
+    console.log(selectedPlayerCounts);
 
     function toggleSelection(set, value) {
         if (set.has(value)) {
@@ -31,6 +42,13 @@
         } else {
             set.add(value);
         }
+        saveConfig({
+            checkboxConfig: {
+                selectedPlayerCounts: Array.from(selectedPlayerCounts),
+                selectedPlayerNames: Array.from(selectedPlayerNames),
+                playersInGames: Array.from(playersInGames)
+            }
+        });
         calculateStats();
     }
 
@@ -169,7 +187,7 @@
         <label>Spelers</label>
         <div class="entries">{#each playerNames as name}
             <label>
-                <input type="checkbox" checked on:change={() => toggleSelection(selectedPlayerNames, name)}/>
+                <input type="checkbox" checked="{selectedPlayerNames.has(name)}" on:change={() => toggleSelection(selectedPlayerNames, name)}/>
                 {name}
             </label>
         {/each}</div>
@@ -178,7 +196,7 @@
         <label>Aantal spelers</label>
         <div class="entries">{#each playerCounts as count}
             <label>
-                <input type="checkbox" checked on:change={() => toggleSelection(selectedPlayerCounts, count)}/>
+                <input type="checkbox" checked="{selectedPlayerCounts.has(count)}" on:change={() => toggleSelection(selectedPlayerCounts, count)}/>
                 {count}
             </label>
         {/each}</div>
@@ -187,7 +205,7 @@
         <label>Spelers in spel</label>
         <div class="entries">{#each playerNames as name}
             <label>
-                <input type="checkbox" checked on:change={() => toggleSelection(playersInGames, name)}/>
+                <input type="checkbox" checked="{playersInGames.has(name)}" on:change={() => toggleSelection(playersInGames, name)}/>
                 {name}
             </label>
         {/each}</div>
@@ -195,9 +213,6 @@
 
     <h1>Gemiddelde punten</h1>
     <Leaderboard entries={average.map (t => new LeaderboardEntry(t.name, `${t.score} (${t.games})`))}/>
-
-    <h1>Totaal punten</h1>
-    <Leaderboard entries={totals.map (t => new LeaderboardEntry(t.name, `${t.score} (${t.games})`))}/>
 
     <h1>Eindresultaten</h1>
     <canvas id="histogram"></canvas>

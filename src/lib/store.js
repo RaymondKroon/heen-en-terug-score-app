@@ -29,7 +29,12 @@ const initialStore = {
     config: {
         version: CONFIG_VERSION,
         shareGame: false,
-        clientId: ''
+        clientId: '',
+        checkboxConfig: {
+            selectedPlayerCounts: [],
+            selectedPlayerNames: [],
+            playersInGames: []
+        }
     }
 };
 
