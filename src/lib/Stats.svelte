@@ -33,8 +33,6 @@
         playersInGames = new Set(config.playersInGames);
     }
 
-    console.log(selectedPlayerCounts);
-
     function toggleSelection(set, value) {
         if (set.has(value)) {
             set.delete(value);
