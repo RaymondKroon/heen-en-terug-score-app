@@ -16,19 +16,19 @@
         score: (t.score / t.games).toFixed(1)
     })).sort((a, b) => b.score - a.score);
 
-    let playerCounts = [...new Set(games.map(game => game.players.length))];
-    playerCounts.sort();
+    let gameSizes = [...new Set(games.map(game => game.players.length))];
+    gameSizes.sort();
     let playerNames = [...new Set(games.flatMap(game => game.players.map(player => player.name)))];
     playerNames.sort();
 
-    let selectedPlayerCounts = new Set(playerCounts);
+    let selectedGameSizes = new Set(gameSizes);
     let selectedPlayerNames = new Set(playerNames);
     let playersInGames = new Set(playerNames);
 
     const config = getConfig().checkboxConfig;
 
     if (config !== undefined) {
-        selectedPlayerCounts = new Set(config.selectedPlayerCounts);
+        selectedGameSizes = new Set(config.selectedGameSizes);
         selectedPlayerNames = new Set(config.selectedPlayerNames);
         playersInGames = new Set(config.playersInGames);
     }
@@ -41,7 +41,7 @@
         }
         saveConfig({
             checkboxConfig: {
-                selectedPlayerCounts: Array.from(selectedPlayerCounts),
+                selectedGameSizes: Array.from(selectedGameSizes),
                 selectedPlayerNames: Array.from(selectedPlayerNames),
                 playersInGames: Array.from(playersInGames)
             }
@@ -51,7 +51,7 @@
 
     function calculateStats() {
         let filteredGames = games.filter(game =>
-            (selectedPlayerCounts.size === 0 || selectedPlayerCounts.has(game.players.length))
+            (selectedGameSizes.size === 0 || selectedGameSizes.has(game.players.length))
             && game.players.every(p => playersInGames.has(p.name))
         );
 
@@ -76,14 +76,14 @@
     filteredGames.forEach(game => {
         game.players.filter(p => p.name === playerName).forEach(player => {
             let place = player.leaderBoardPosition;
-            let playerCount = game.players.length;
+            let gameSize = game.players.length;
             if (!playerData[place]) {
                 playerData[place] = {};
             }
-            if (!playerData[place][playerCount]) {
-                playerData[place][playerCount] = 0;
+            if (!playerData[place][gameSize]) {
+                playerData[place][gameSize] = 0;
             }
-            playerData[place][playerCount]++;
+            playerData[place][gameSize]++;
         });
     });
 
@@ -112,10 +112,10 @@
         });
     });
 
-    let datasets = playerCounts.filter(count => selectedPlayerCounts.has(count)).map((count, index) => {
+    let datasets = gameSizes.filter(count => selectedGameSizes.has(count)).map((count, index) => {
         let data = labels.map(label => {
-            let playerCounts = playerData[label] || {};
-            let percentage = (playerCounts[count] || 0) / (totalCounts[count] || 1) * 100;
+            let gameSizes = playerData[label] || {};
+            let percentage = (gameSizes[count] || 0) / (totalCounts[count] || 1) * 100;
             return {
                 x: label,
                 y: percentage
@@ -206,10 +206,10 @@
     </div>
     <div class="checkbox-row">
         <label>Aantal spelers</label>
-        <div class="entries">{#each playerCounts as count}
+        <div class="entries">{#each gameSizes as size}
             <label>
-                <input type="checkbox" checked="{selectedPlayerCounts.has(count)}" on:change={() => toggleSelection(selectedPlayerCounts, count)}/>
-                {count}
+                <input type="checkbox" checked="{selectedGameSizes.has(size)}" on:change={() => toggleSelection(selectedGameSizes, size)}/>
+                {size}
             </label>
         {/each}</div>
     </div>

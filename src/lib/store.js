@@ -31,7 +31,7 @@ const initialStore = {
         shareGame: false,
         clientId: '',
         checkboxConfig: {
-            selectedPlayerCounts: [],
+            selectedGameSizes: [],
             selectedPlayerNames: [],
             playersInGames: []
         }
