@@ -21,7 +21,6 @@
     let playerNames = [...new Set(games.flatMap(game => game.players.map(player => player.name)))];
     playerNames.sort();
 
-
     let selectedPlayerCounts = new Set(playerCounts);
     let selectedPlayerNames = new Set(playerNames);
     let playersInGames = new Set(playerNames);
@@ -69,92 +68,103 @@
         })).sort((a, b) => b.score - a.score);
 
         totals = totals;
-        updateHistogram(filteredGames);
+        updateHistograms(filteredGames);
     }
 
-    let histogramChart;
+    let histogramCharts = {};
 
-    function prepareHistogramData(filteredGames) {
-        let playerData = {};
-        filteredGames.forEach(game => {
-            game.players.filter(p => selectedPlayerNames.has(p.name)).forEach(player => {
-                if (!playerData[player.name]) {
-                    playerData[player.name] = {};
-                }
-                let place = player.leaderBoardPosition;
-                let playerCount = game.players.length;
-                if (!playerData[player.name][place]) {
-                    playerData[player.name][place] = {};
-                }
-                if (!playerData[player.name][place][playerCount]) {
-                    playerData[player.name][place][playerCount] = 0;
-                }
-                playerData[player.name][place][playerCount]++;
-            });
+    function prepareHistogramData(filteredGames, playerName) {
+    let playerData = {};
+    filteredGames.forEach(game => {
+        game.players.filter(p => p.name === playerName).forEach(player => {
+            let place = player.leaderBoardPosition;
+            let playerCount = game.players.length;
+            if (!playerData[place]) {
+                playerData[place] = {};
+            }
+            if (!playerData[place][playerCount]) {
+                playerData[place][playerCount] = 0;
+            }
+            playerData[place][playerCount]++;
         });
+    });
 
-        let labels = [...new Set(filteredGames.flatMap(game => game.players.map(player => player.leaderBoardPosition)))];
-        labels.sort((a, b) => a - b);
+    let labels = [...new Set(filteredGames.flatMap(game => game.players.map(player => player.leaderBoardPosition)))];
+    labels.sort((a, b) => a - b);
 
-        const colors = [
-            'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)',
-            'rgba(255, 206, 86, 0.2)',
-            'rgba(75, 192, 192, 0.2)',
-            'rgba(153, 102, 255, 0.2)',
-            'rgba(255, 159, 64, 0.2)',
-            'rgba(199, 199, 199, 0.2)',
-            'rgba(83, 102, 255, 0.2)',
-            'rgba(255, 99, 132, 0.2)',
-            'rgba(54, 162, 235, 0.2)'
-        ];
+    const colors = [
+        'rgba(255, 206, 86, 0.2)',
+        'rgba(75, 192, 192, 0.2)',
+        'rgba(54, 162, 235, 0.2)',
+        'rgba(153, 102, 255, 0.2)',
+        'rgba(255, 159, 64, 0.2)',
+        'rgba(199, 199, 199, 0.2)',
+        'rgba(83, 102, 255, 0.2)',
+        'rgba(255, 99, 132, 0.2)',
+        'rgba(54, 162, 235, 0.2)'
+    ];
 
-        let datasets = Object.keys(playerData).map((playerName, index) => {
-            let data = labels.map(label => {
-                let playerCounts = playerData[playerName][label] || {};
-                return Object.keys(playerCounts).map(count => ({
-                    x: label,
-                    y: playerCounts[count],
-                    playerCount: count
-                }));
-            }).flat();
+    let totalCounts = {};
+    Object.values(playerData).forEach(counts => {
+        Object.entries(counts).forEach(([count, value]) => {
+            if (!totalCounts[count]) {
+                totalCounts[count] = 0;
+            }
+            totalCounts[count] += value;
+        });
+    });
 
+    let datasets = playerCounts.filter(count => selectedPlayerCounts.has(count)).map((count, index) => {
+        let data = labels.map(label => {
+            let playerCounts = playerData[label] || {};
+            let percentage = (playerCounts[count] || 0) / (totalCounts[count] || 1) * 100;
             return {
-                label: playerName,
-                data: data,
-                backgroundColor: colors[index % colors.length],
-                borderColor: colors[index % colors.length].replace('0.2', '1'),
-                borderWidth: 1
+                x: label,
+                y: percentage
             };
         });
 
-        // Sort datasets by player name
-        datasets.sort((a, b) => a.label.localeCompare(b.label));
-
         return {
-            labels: labels,
-            datasets: datasets
+            label: `${count} players`,
+            data: data,
+            backgroundColor: colors[index % colors.length],
+            borderColor: colors[index % colors.length].replace('0.2', '1'),
+            borderWidth: 1
         };
-    }
+    });
 
-    function updateHistogram(filteredGames) {
-        if (histogramChart) {
-            histogramChart.data = prepareHistogramData(filteredGames);
-            histogramChart.update();
-        }
+    return {
+        labels: labels,
+        datasets: datasets
+    };
+}
+
+    function updateHistograms(filteredGames) {
+        selectedPlayerNames.forEach(playerName => {
+            if (histogramCharts[playerName]) {
+                histogramCharts[playerName].data = prepareHistogramData(filteredGames, playerName);
+                histogramCharts[playerName].update();
+            }
+        });
     }
 
     onMount(() => {
-        const canvas = document.getElementById('histogram');
+    selectedPlayerNames.forEach(playerName => {
+        const canvas = document.getElementById(`histogram-${playerName}`);
         if (canvas instanceof HTMLCanvasElement) {
             const ctx = canvas.getContext('2d');
-            histogramChart = new Chart(ctx, {
-                type: 'bar',
-                data: prepareHistogramData(games),
+            histogramCharts[playerName] = new Chart(ctx, {
+                type: 'line',
+                data: prepareHistogramData(games, playerName),
                 options: {
                     scales: {
                         y: {
-                            beginAtZero: true
+                            beginAtZero: true,
+                            ticks: {
+                                callback: function(value) {
+                                    return value + '%'; // Add percentage symbol to y-axis
+                                }
+                            }
                         }
                     },
                     plugins: {
@@ -166,6 +176,7 @@
             });
         }
     });
+});
 </script>
 
 <style>
@@ -179,6 +190,9 @@
         display: grid;
         grid-template-columns: repeat(auto-fill, minmax(100px, 1fr));
         gap: 10px;
+    }
+    .histogram-container {
+        margin-bottom: 20px;
     }
 </style>
 
@@ -215,5 +229,10 @@
     <Leaderboard entries={average.map (t => new LeaderboardEntry(t.name, `${t.score} (${t.games})`))}/>
 
     <h1>Eindresultaten</h1>
-    <canvas id="histogram"></canvas>
+    {#each selectedPlayerNames as name}
+        <div class="histogram-container">
+            <h2>{name}</h2>
+            <canvas id="histogram-{name}"></canvas>
+        </div>
+    {/each}
 </div>
