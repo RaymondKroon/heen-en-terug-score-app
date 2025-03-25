@@ -204,14 +204,27 @@ export function getStandings(gameId) {
 export function getStandingsForGame(game) {
     let standings = [...game.players];
     standings.sort((a, b) => a.leaderBoardPosition - b.leaderBoardPosition);
+
+    const currentRoundIndex = currentRoundForGame(game);
+
     return standings.map(player => {
         let standingsDiff = undefined
         if (player.previousLeaderBoardPosition !== undefined) {
             standingsDiff = player.previousLeaderBoardPosition - player.leaderBoardPosition;
         }
+
+        let lastRoundScore = 0;
+        // if there is at least one completed round, use its score for this player
+        if (currentRoundIndex > 0) {
+            const previousRound = game.rounds[currentRoundIndex - 1];
+            const previousPreviousRound = game.rounds[currentRoundIndex - 2];
+            lastRoundScore =  previousRound.totalScore[player.id] - (previousPreviousRound ? previousPreviousRound.totalScore[player.id] : 0);
+        }
+
         return {
             name: player.name,
             score: player.score,
+            lastRound: lastRoundScore,
             options: standingsDiff !== undefined ? {standingsDiff} : {},
         }
     });

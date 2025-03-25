@@ -3,6 +3,7 @@
     // array of LeaderboardEntry
     export let entries = [];
     export let zoom = false;
+    export let showPointsFromLastRound = false;
     $: factor = zoom ? 2:  1;
     $: arrow_offsets =  zoom ? [-9, -13, -5, -17] : [-7, -11, -3, -15];
 
@@ -43,8 +44,15 @@
         flex-basis: calc( var(--factor) * 15px);
     }
 
+    .entry-lastRound {
+        font-size: 50%;
+        vertical-align: middle;
+        font-weight: normal;
+        margin-right: 5px;
+    }
+
     .zoom {
-        font-size: 2.5em
+        font-size: 1.8em
     }
 
     .up {
@@ -68,7 +76,7 @@
     }
 </style>
 
-<div on:click={() => zoom = !zoom} class="leaderboard" style="--factor:{factor};">
+<div role="none" on:click={() => zoom = !zoom} class="leaderboard" style="--factor:{factor};">
     {#each entries as entry}
         <div class:zoom={zoom} class="entry">
             <div class="entry-options">
@@ -104,6 +112,9 @@
                 {entry.name}
             </div>
             <div class="entry-score">
+                {#if showPointsFromLastRound && entry.lastRound !== undefined}
+                    <span class="entry-lastRound">+{entry.lastRound}</span>
+                {/if}
                 {entry.score}
             </div>
         </div>

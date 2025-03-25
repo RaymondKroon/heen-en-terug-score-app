@@ -45,6 +45,7 @@
     async function exportStandings() {
 
         leaderboard.zoom = false;
+        leaderboard.showPointsFromLastRound = false;
 
         function filter(node) {
             if (node.tagName && node.tagName.toLowerCase() === 'a') {
@@ -87,6 +88,9 @@
             }
         } catch (e) {
             console.error('oops, something went wrong!', e);
+        }
+        finally {
+            leaderboard.showPointsFromLastRound = true && currentRoundId > 0;
         }
     }
 
@@ -194,12 +198,12 @@
             {#if gameFinished}<a href="#/splash/{id}"><span class="material-icons-outlined">celebration</span></a>{/if}
             <a href="#/simulate"><span class="material-icons-outlined">casino</span></a>
         </h1>
-        <Leaderboard bind:this={leaderboard} zoom={true} entries={getStandings(id)}/>
+        <Leaderboard bind:this={leaderboard} zoom={true} showPointsFromLastRound={true && currentRoundId > 0} entries={getStandings(id)}/>
     </div>
 
     {#if currentRound}
         <h2>Volgende ronde</h2>
-        <div class="next-round" on:click={_ => playRound(currentRoundId)}>
+        <div role="none" class="next-round" on:click={_ => playRound(currentRoundId)}>
             <div class="cards">{currentRound.nCards}</div>
             <Trump size=6 suit={currentRound.trump}/>
             {#if dealer}
