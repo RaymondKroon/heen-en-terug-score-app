@@ -27,5 +27,8 @@
     "vitest": "2.0.5",
     "vite-plugin-node-polyfills": "^0.22.0",
     "@wasm-tool/rollup-plugin-rust": "^2.4.2"
+  },
+  "optionalDependencies": {
+    "@rollup/rollup-linux-x64-gnu": "^4.37.0"
   }
 }
