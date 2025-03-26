@@ -6,12 +6,10 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "postinstall": "patch-package",
     "preview": "vite preview",
     "test": "vitest"
   },
   "dependencies": {
-    "bittorrent-tracker": "^11.1.2",
     "canvas-confetti": "^1.9.3",
     "chart.js": "^4.4.6",
     "d3": "^7.9.0",

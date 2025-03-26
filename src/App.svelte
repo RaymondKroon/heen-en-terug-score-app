@@ -12,49 +12,18 @@
     import WinnerSplash from "./lib/WinnerSplash.svelte";
     import Countdown from "./lib/Countdown.svelte";
     import Simulate from "./lib/Simulate.svelte";
-    import Live from "./lib/Live.svelte";
     import ConfigPage from "./lib/ConfigPage.svelte";
-    import {get, writable} from "svelte/store";
-    import {getActiveConfig, shareGame} from "./lib/store.js";
-    import P2PT from "./lib/p2pt.js";
-    import {announce, currentRoundForGame} from "./lib/lib.js";
-
-    let serializedGame = writable(null);
-    let hasBids = false;
+    import {getActiveConfig} from "./lib/store.js";
 
     async function handleMessage(event) {
         if (event.detail.type === 'play') {
             const {id} = event.detail;
             window.location.href = `#/game/${id}`;
-        } else if (event.detail.type === 'game') {
-            let game = event.detail.game;
-            serializedGame.set(await shareGame(game.id));
-            let currentRound = currentRoundForGame(game);
-            hasBids = game.rounds[currentRound].bids.length > 0;
-            try {
-                for (const [peerId, peer] of Object.entries(shareClient.peers)) {
-                    try {
-                        if (Object.keys(peer).length !== 0) {
-                            for (const [key, value] of Object.entries(peer)) {
-                                await shareClient.send(value, {game: get(serializedGame), hasBids});
-                            }
-
-                        }
-                    } catch (e) {
-                    }
-                }
-            } catch (e) {
-                console.error(e);
-            }
         }
     }
 
     let page;
     let props;
-
-    const config = getActiveConfig();
-
-    let shareClient;
 
     $: hash = window.location.hash;
 
@@ -119,10 +88,6 @@
             props = {id};
         } else if (path.startsWith('/simulate')) {
             page = Simulate;
-        } else if (path.startsWith('/live')) {
-            let clientId = path.slice(6);
-            page = Live;
-            props = {clientId};
         } else if (path.startsWith('/config')) {
             page = ConfigPage;
         } else {
@@ -135,30 +100,6 @@
 
     onMount(() => {
         hashchange();
-
-        shareClient = new P2PT(announce, `heen-en-weer-${$config.clientId}`);
-
-        shareClient.on('trackerconnect', (tracker, stats) => {
-        })
-
-        // If a new peer, send message
-        shareClient.on('peerconnect', (peer) => {
-            let gameVal = get(serializedGame);
-            if (!!gameVal ) {
-                shareClient.send(peer, {game: gameVal, hasBids});
-            }
-        })
-
-        // If message received from peer
-        shareClient.on('msg', (peer, msg) => {
-
-        })
-
-        if (!hash.includes("trump") && $config.shareGame) {
-            shareClient.start().then(() => {
-                // console.log('P2PT started. My peer id : ' + shareClient._peerId)
-            })
-        }
     });
 </script>
 
