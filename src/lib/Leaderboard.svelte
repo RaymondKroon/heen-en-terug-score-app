@@ -1,11 +1,22 @@
 <svelte:options accessors />
 <script>
+    import { swipe } from 'svelte-gestures';
+
     // array of LeaderboardEntry
     export let entries = [];
     export let zoom = false;
     export let showPointsFromLastRound = false;
+
+    let rotated = false;
+
     $: factor = zoom ? 2:  1;
     $: arrow_offsets =  zoom ? [-9, -13, -5, -17] : [-7, -11, -3, -15];
+
+    function handleSwipe(event) {
+        if (event.detail.direction === 'top') {
+            rotated = !rotated;
+        }
+    }
 
 </script>
 
@@ -15,6 +26,10 @@
         border-radius: 10px;
         background-color: var(--accent-color);
         width: 100%;
+    }
+
+    .rotated {
+        transform: rotate(180deg);
     }
 
     .entry {
@@ -76,7 +91,7 @@
     }
 </style>
 
-<div role="none" on:click={() => zoom = !zoom} class="leaderboard" style="--factor:{factor};">
+<div use:swipe role="none" on:click={() => zoom = !zoom} on:swipe={handleSwipe} class="leaderboard" class:rotated={rotated} style="--factor:{factor};">
     {#each entries as entry}
         <div class:zoom={zoom} class="entry">
             <div class="entry-options">
