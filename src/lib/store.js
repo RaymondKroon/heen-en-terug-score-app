@@ -214,17 +214,20 @@ export function getStandingsForGame(game) {
         }
 
         let lastRoundScore = 0;
+        let lastRoundBonus = false;
         // if there is at least one completed round, use its score for this player
         if (currentRoundIndex > 0) {
             const previousRound = game.rounds[currentRoundIndex - 1];
             const previousPreviousRound = game.rounds[currentRoundIndex - 2];
             lastRoundScore =  previousRound.totalScore[player.id] - (previousPreviousRound ? previousPreviousRound.totalScore[player.id] : 0);
+            lastRoundBonus = previousRound.bids[player.id] === previousRound.tricks[player.id];
         }
 
         return {
             name: player.name,
             score: player.score,
             lastRound: lastRoundScore,
+            lastRoundBonus: lastRoundBonus,
             options: standingsDiff !== undefined ? {standingsDiff} : {},
         }
     });

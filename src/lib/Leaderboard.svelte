@@ -52,11 +52,28 @@
     .entry-score {
         font-size: 1.5em;
         font-weight: bold;
+        display: flex;
+        flex-direction: row;
+        gap: 3px;
+        align-items: center;
     }
 
     .entry-options {
         /*flex-grow: 1;*/
         flex-basis: calc( var(--factor) * 15px);
+    }
+
+    .entry-bonus {
+        font-size: 50%;
+        vertical-align: middle;
+        font-weight: normal;
+    }
+
+    .ok {
+        color: green;
+    }
+    .not-ok {
+        color: red;
     }
 
     .entry-lastRound {
@@ -128,6 +145,11 @@
             </div>
             <div class="entry-score">
                 {#if showPointsFromLastRound && entry.lastRound !== undefined}
+                    {#if entry.lastRoundBonus}
+                        <span class="material-icons-outlined entry-bonus ok">check</span>
+                    {:else}
+                        <span class="material-icons-outlined entry-bonus not-ok" >close</span>
+                    {/if}
                     <span class="entry-lastRound">+{entry.lastRound}</span>
                 {/if}
                 {entry.score}
