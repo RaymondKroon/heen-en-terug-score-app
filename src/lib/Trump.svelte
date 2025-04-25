@@ -40,6 +40,16 @@
     .none {
         color: grey;
     }
+
+    @media (prefers-color-scheme: dark) {
+        .spade {
+            color: white;
+        }
+
+        .diamond {
+            color: cornflowerblue;
+        }
+    }
 </style>
 
 <div class="trump" style="font-size: {fontSize}em; height: {height}">

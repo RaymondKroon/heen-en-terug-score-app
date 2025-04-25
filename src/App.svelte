@@ -87,7 +87,11 @@
             page = WinnerSplash;
             props = {id};
         } else if (path.startsWith('/simulate')) {
+            let players_trump = path.slice(10);
+            let players = parseInt(players_trump.split('/')[0]);
+            let trump = parseInt(players_trump.split('/')[1]);
             page = Simulate;
+            props = {players, trump};
         } else if (path.startsWith('/config')) {
             page = ConfigPage;
         } else {

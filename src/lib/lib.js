@@ -193,6 +193,14 @@ export const TRUMPS_SHORT = {
     4: '-',
 }
 
+export const TRUMPS_SHORT_EN = {
+    0: 'S',
+    1: 'H',
+    2: 'C',
+    3: 'D',
+    4: '-',
+}
+
 export async function serializeGame(game) {
     let serializer = await serializer_wasm();
     return serializer.serialize(game);

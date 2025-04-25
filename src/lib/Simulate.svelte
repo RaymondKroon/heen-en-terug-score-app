@@ -1,18 +1,36 @@
 <script>
-    import {simulateGame} from "./lib.js";
+    import {simulateGame, TRUMPS, TRUMPS_SHORT_EN} from "./lib.js";
     import {writable} from "svelte/store";
     import * as d3 from "d3";
+    import CardSelector from "./CardSelector.svelte";
+    import TrumpSelector from "./TrumpSelector.svelte";
 
-    let input = writable("(2s) 5p x 2c 5h");
+    let seconds = 2;
+    export let players = 4;
+    export let trump = TRUMPS.NO_TRUMP;
+    let selectedCards = [];
+
     let result = writable("");
     let isLoading = writable(false);
+
+    // Generate the input string based on the GUI selections
+    function generateInputString() {
+        const playerCount = players;
+        const trumpChar = trump === TRUMPS.NO_TRUMP ? 'x' : TRUMPS_SHORT_EN[trump].toLowerCase();
+        const cardsString = selectedCards.join(' ');
+        return `(${seconds}s) ${playerCount}p ${trumpChar} ${cardsString}`;
+    }
 
     async function handleSimulate() {
         isLoading.set(true);
         result.set(""); // Clear old results
         d3.select("#charts").selectAll("*").remove();
         await new Promise(r => setTimeout(r, 100));
-        let simulationResult = await simulateGame($input);
+
+        const inputString = generateInputString();
+        console.log("Simulation input:", inputString);
+
+        let simulationResult = await simulateGame(inputString);
         result.set(simulationResult);
         drawCharts(simulationResult);
         //sleep
@@ -175,12 +193,120 @@
         border: 1px solid; /* Add border to table cells */
         padding: 5px; /* Add padding to table cells */
     }
+
+    .simulation-controls {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        margin-bottom: 20px;
+    }
+
+    .control-group {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+
+    .player-selector {
+        width: 200px;
+    }
+
+    .custom-number-input {
+        display: flex;
+        overflow: hidden;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+        width: 200px;
+    }
+
+    .player-button {
+        flex: 1;
+        background-color: var(--accent-color);
+        border: none;
+        padding: 8px;
+        cursor: pointer;
+        outline: none;
+        text-align: center;
+    }
+
+    .player-button:first-child {
+        border-top-left-radius: 5px;
+        border-bottom-left-radius: 5px;
+    }
+
+    .player-button:last-child {
+        border-top-right-radius: 5px;
+        border-bottom-right-radius: 5px;
+    }
+
+    .player-button.active {
+        background-color: #007bff;
+        color: #fff;
+    }
+
+    button {
+        padding: 10px 15px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1em;
+        margin-top: 10px;
+    }
+
+    button:disabled {
+        background-color: #cccccc;
+        cursor: not-allowed;
+    }
+
+    input[type="number"] {
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        width: 100px;
+    }
 </style>
 
 <div>
     <h1>Simulatie <a href="javascript:history.back();">↑</a></h1>
-    <input type="text" bind:value={$input}/>
-    <button on:click={handleSimulate} disabled={$isLoading}>Simuleer</button>
+
+    <div class="simulation-controls">
+        <div class="control-group">
+            <label for="seconds">Simulation tijd (secondes):</label>
+            <input type="number" id="seconds" bind:value={seconds} min="1" max="60" />
+        </div>
+
+        <div class="control-group">
+            <label>Aantal spelers:</label>
+            <div class="player-selector">
+                <div class="custom-number-input">
+                    {#each [2, 3, 4, 5] as num }
+                        <div
+                            class="player-button {players === num ? 'active' : ''}"
+                            on:click={() => players = num}
+                        >
+                            {num}
+                        </div>
+                    {/each}
+                </div>
+            </div>
+        </div>
+
+        <div class="control-group">
+            <label>Troef:</label>
+            <TrumpSelector bind:selectedTrump={trump}/>
+        </div>
+
+        <div class="control-group">
+            <CardSelector bind:selectedCards />
+        </div>
+
+        <button on:click={handleSimulate} disabled={$isLoading || selectedCards.length === 0}>
+            {$isLoading ? 'Bezig...' : 'Simuleer'}
+        </button>
+    </div>
+
     <div>
         <h2>Resultaat:</h2>
         <div id="charts"></div>
