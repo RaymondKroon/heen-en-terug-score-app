@@ -1,47 +1,119 @@
-# Svelte + Vite
+# Heen en Terug Score App
 
-This template should help get you started developing with Svelte in Vite.
+A digital scorekeeper for our family's favorite card game "Heen en Terug" (There and Back).
 
-## Recommended IDE Setup
+## About the Game
 
-[VS Code](https://code.visualstudio.com/) + [Svelte](https://marketplace.visualstudio.com/items?itemName=svelte.svelte-vscode).
+"Heen en Terug" is a Dutch trick-taking card game similar to Oh Hell or Wizard. The game is played with a standard deck of cards and involves:
 
-## Need an official Svelte framework?
+- Players bidding on how many tricks they think they'll win in each round
+- A changing number of cards dealt each round (hence the name "There and Back")
+- Different trump suits for each round
+- Scoring based on accurately predicting your tricks
 
-Check out [SvelteKit](https://github.com/sveltejs/kit#readme), which is also powered by Vite. Deploy anywhere with its serverless-first approach and adapt to various platforms, with out of the box support for TypeScript, SCSS, and Less, and easily-added support for mdsvex, GraphQL, PostCSS, Tailwind CSS, and more.
+## Features
 
-## Technical considerations
+- 📱 Mobile-friendly interface for easy use during game nights
+- 🎮 Complete game management:
+  - Create new games with custom player names
+  - Track bids and tricks for each round
+  - Automatic score calculation
+  - Leaderboard with player rankings
+- 📊 Game statistics and analysis
+- 📷 Share game standings as images
+- 🎲 Game simulation capabilities
+- 💰 Calculates monetary winnings/losses (just for fun!)
 
-**Why use this over SvelteKit?**
+## Requirements
 
-- It brings its own routing solution which might not be preferable for some users.
-- It is first and foremost a framework that just happens to use Vite under the hood, not a Vite app.
+- Modern web browser with JavaScript and WebAssembly support
+- No server or backend required - all game data is stored in the URL
+- Internet connection only needed for initial loading
 
-This template contains as little as possible to get started with Vite + Svelte, while taking into account the developer experience with regards to HMR and intellisense. It demonstrates capabilities on par with the other `create-vite` templates and is a good starting point for beginners dipping their toes into a Vite + Svelte project.
+## Local Development Setup
 
-Should you later need the extended capabilities and extensibility provided by SvelteKit, the template has been structured similarly to SvelteKit so that it is easy to migrate.
+### Prerequisites
 
-**Why `global.d.ts` instead of `compilerOptions.types` inside `jsconfig.json` or `tsconfig.json`?**
+1. **Rust Toolchain**:
+   - Install [Rust](https://www.rust-lang.org/tools/install)
+   - Add WebAssembly target:
+     ```bash
+     rustup update stable
+     rustup target add wasm32-unknown-unknown
+     rustup default stable
+     ```
 
-Setting `compilerOptions.types` shuts out all other types not explicitly listed in the configuration. Using triple-slash references keeps the default TypeScript setting of accepting type information from the entire workspace, while also adding `svelte` and `vite/client` type information.
+2. **Node.js**:
+   - Recommended version: 22.x
+   - Install from [Node.js website](https://nodejs.org/) or use a version manager
 
-**Why include `.vscode/extensions.json`?**
+### Installation
 
-Other templates indirectly recommend extensions via the README, but this file allows VS Code to prompt the user to install the recommended extension upon opening the project.
+```bash
+# Clone the repository
+git clone https://github.com/raymondkroon/heen-en-terug-score-app.git
 
-**Why enable `checkJs` in the JS template?**
+# Navigate to the project directory
+cd heen-en-terug-score-app
 
-It is likely that most cases of changing variable types in runtime are likely to be accidental, rather than deliberate. This provides advanced typechecking out of the box. Should you like to take advantage of the dynamically-typed nature of JavaScript, it is trivial to change the configuration.
+# Install dependencies
+npm install
 
-**Why is HMR not preserving my local component state?**
-
-HMR state preservation comes with a number of gotchas! It has been disabled by default in both `svelte-hmr` and `@sveltejs/vite-plugin-svelte` due to its often surprising behavior. You can read the details [here](https://github.com/sveltejs/svelte-hmr/tree/master/packages/svelte-hmr#preservation-of-local-state).
-
-If you have state that's important to retain within a component, consider creating an external store which would not be replaced by HMR.
-
-```js
-// store.js
-// An extremely simple external store
-import { writable } from 'svelte/store'
-export default writable(0)
+# Start the development server
+npm run dev
 ```
+
+## Usage
+
+1. Open the app in your browser (default: http://localhost:5173)
+2. Create a new game and add player names
+3. For each round:
+   - View the number of cards and trump suit
+   - Enter each player's bid
+   - After playing the round, enter the actual tricks won
+   - Scores are calculated automatically
+4. Continue until all rounds are complete
+5. View the final standings and celebrate the winner!
+
+## Building for Production
+
+```bash
+# Build the app for production
+npm run build
+
+# For GitHub Pages deployment (with base path)
+npm run build -- --base=/heen-en-terug-score-app/
+
+# Preview the production build
+npm run preview
+```
+
+The GitHub Pages deployment uses a base path (`/heen-en-terug-score-app/`). If you're deploying to a different environment, you may need to adjust the base path accordingly.
+
+## Hosting
+
+The application is hosted and available at:
+[raymond.k3n.nl/heen-en-terug-score-app](https://raymond.k3n.nl/heen-en-terug-score-app)
+
+Since the app has no backend and all game state is stored in the URL, you can share a game by simply sharing the URL with other players.
+
+## Family Game Night
+
+This app was created specifically for our family card evenings to replace paper scoresheets and make game nights more enjoyable. It's designed to be simple enough for everyone to use, from grandparents to kids!
+
+## Technologies Used
+
+- [Svelte](https://svelte.dev/) - Frontend framework
+- [Vite](https://vitejs.dev/) - Build tool
+- [Rust](https://www.rust-lang.org/) - For game simulation logic and serialization
+- [WebAssembly](https://webassembly.org/) - For running Rust code in the browser
+- [Chart.js](https://www.chartjs.org/) - For statistics visualization
+- [html-to-image](https://github.com/bubkoo/html-to-image) - For sharing game standings
+
+## License
+
+This project is private and intended for family use only.
+
+## Author
+
+Raymond Kroon
