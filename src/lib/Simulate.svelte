@@ -273,7 +273,7 @@
 
     <div class="simulation-controls">
         <div class="control-group">
-            <label for="seconds">Simulation tijd (secondes):</label>
+            <label for="seconds">Simulatieduur (secondes):</label>
             <input type="number" id="seconds" bind:value={seconds} min="1" max="60" />
         </div>
 
