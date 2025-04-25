@@ -16,6 +16,9 @@
     let currentRoundId = _currentRoundId(id);
     let currentRound = getGame(id).rounds[currentRoundId];
 
+    let simulatedRoundId = currentRoundId > 0 ? currentRoundId - 1: currentRoundId;
+    let simulateRound = getGame(id).rounds[simulatedRoundId];
+
     let game = getGame(id);
     onMount(() => {
         dispatch('message', {
@@ -196,7 +199,7 @@
         <h1>Stand <a href="#/list">↑</a>
             <a href="#" on:click|preventDefault={exportStandings}><span class="material-icons-outlined">share</span></a>
             {#if gameFinished}<a href="#/splash/{id}"><span class="material-icons-outlined">celebration</span></a>{/if}
-            <a href="#/simulate/{players.length}/{currentRound.trump}"><span class="material-icons-outlined">casino</span></a>
+            <a href="#/simulate/{players.length}/{simulateRound.trump}"><span class="material-icons-outlined">casino</span></a>
         </h1>
         <Leaderboard bind:this={leaderboard} zoom={true} showPointsFromLastRound={true && currentRoundId > 0} entries={getStandings(id)}/>
     </div>
