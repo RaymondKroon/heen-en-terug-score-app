@@ -12,11 +12,14 @@
 
     // Selected cards
     export let selectedCards = [];
+    export let disabled = false;
 
     const dispatch = createEventDispatcher();
 
     // Add a card to the selection
     function addCard(rank, suit) {
+        if (disabled) return;
+
         const cardCode = `${rank}${suit.code}`;
         if (!selectedCards.includes(cardCode)) {
             selectedCards = [...selectedCards, cardCode];
@@ -26,6 +29,8 @@
 
     // Remove a card from the selection
     function removeCard(cardCode) {
+        if (disabled) return;
+
         selectedCards = selectedCards.filter(card => card !== cardCode);
         dispatch('change', selectedCards);
     }
@@ -88,6 +93,17 @@
         background-color: #f0f0f0;
     }
 
+    /* Disabled state styling */
+    .card-selector.disabled .selected-card,
+    .card-selector.disabled .card-button {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
+    .card-selector.disabled .card-button:hover {
+        background-color: transparent;
+    }
+
     .red { color: red; }
     .black { color: black; }
     .green { color: green; }
@@ -99,7 +115,7 @@
     }
 </style>
 
-<div class="card-selector">
+<div class="card-selector {disabled ? 'disabled' : ''}">
     <h3>Geselecteerde kaarten</h3>
     <div class="selected-cards">
         {#if selectedCards.length === 0}

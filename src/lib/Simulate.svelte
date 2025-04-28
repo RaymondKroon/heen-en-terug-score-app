@@ -1,44 +1,127 @@
 <script>
-    import {simulateGame, TRUMPS, TRUMPS_SHORT_EN} from "./lib.js";
+    import {simulateGame, stopSimulation, TRUMPS, TRUMPS_SHORT_EN} from "./lib.js";
     import {writable} from "svelte/store";
+    import {onDestroy, onMount} from "svelte";
     import * as d3 from "d3";
     import CardSelector from "./CardSelector.svelte";
     import TrumpSelector from "./TrumpSelector.svelte";
 
-    let seconds = 2;
     export let players = 4;
     export let trump = TRUMPS.NO_TRUMP;
     let selectedCards = [];
 
     let result = writable("");
     let isLoading = writable(false);
+    let simulationRunning = writable(false);
+    let simulationResults = writable([]);
+    let totalSimulations = writable(0);
+
+    // Function to handle navigation events (back button)
+    async function handleNavigation() {
+        if ($simulationRunning) {
+            await handleStopSimulation();
+        }
+        d3.select("#charts").selectAll("*").remove();
+    }
+
+    // Add listener for popstate event (browser back/forward buttons)
+    onMount(() => {
+        window.addEventListener('popstate', handleNavigation);
+    });
+
+    // Stop simulation when component is destroyed (user leaves the page)
+    // and remove event listeners to prevent memory leaks
+    onDestroy(() => {
+        if ($simulationRunning) {
+            handleStopSimulation();
+        }
+        window.removeEventListener('popstate', handleNavigation);
+    });
 
     // Generate the input string based on the GUI selections
     function generateInputString() {
         const playerCount = players;
         const trumpChar = trump === TRUMPS.NO_TRUMP ? 'x' : TRUMPS_SHORT_EN[trump].toLowerCase();
         const cardsString = selectedCards.join(' ');
-        return `(${seconds}s) ${playerCount}p ${trumpChar} ${cardsString}`;
+        return `${playerCount}p ${trumpChar} ${cardsString}`;
     }
 
     async function handleSimulate() {
         isLoading.set(true);
+        simulationRunning.set(true);
         result.set(""); // Clear old results
+        simulationResults.set([]);
+        totalSimulations.set(0);
         d3.select("#charts").selectAll("*").remove();
         await new Promise(r => setTimeout(r, 100));
 
         const inputString = generateInputString();
-        console.log("Simulation input:", inputString);
 
-        let simulationResult = await simulateGame(inputString);
-        result.set(simulationResult);
-        drawCharts(simulationResult);
-        //sleep
-        isLoading.set(false);
+        try {
+            // Use the streaming API with a callback that handles both intermediate and final results
+            // Don't use await here to keep the UI responsive
+            simulateGame(inputString, (results) => {
+                // This callback will be called periodically with intermediate results
+                // and also with the final result
+                simulationResults.set(results);
+                result.set(results); // Update the result with each callback
+
+                // Calculate total simulations from the results
+                if (results && results.length > 0) {
+                    // Sum the count of simulations for the first starting position
+                    // (all positions have the same total)
+                    const firstPositionResults = results.filter(r => r.starting_position === 0);
+                    const total = firstPositionResults.reduce((sum, r) => sum + r.count, 0);
+                    totalSimulations.set(total);
+                }
+
+                drawCharts(results);
+
+                document.getElementById('stop-button').scrollIntoView(true);
+
+                // Check if this is the final result (simulation completed or stopped)
+                // We can't easily determine this, so we'll rely on the stop button to set simulationRunning to false
+            }).catch(error => {
+                console.error("Simulation error:", error);
+                simulationRunning.set(false);
+                isLoading.set(false);
+            });
+        } catch (error) {
+            console.error("Simulation error:", error);
+            simulationRunning.set(false);
+            isLoading.set(false);
+        }
+
+        // Note: We don't have a finally block here because we're not using await
+        // The cleanup will be done either in the callback's error handler or in handleStopSimulation
+    }
+
+    async function handleStopSimulation() {
+        if ($simulationRunning) {
+            try {
+                await stopSimulation();
+            } catch (error) {
+                console.error("Error stopping simulation:", error);
+            } finally {
+                // Clean up regardless of whether stopSimulation succeeded
+                simulationRunning.set(false);
+                isLoading.set(false);
+
+                // Draw the final charts with the current results
+                if ($simulationResults && $simulationResults.length > 0) {
+                    drawCharts($simulationResults);
+
+                    document.getElementById('stop-button').scrollIntoView(true);
+                }
+            }
+        }
     }
 
     function drawCharts(data) {
         // data looks like this: `{n_players: 5, starting_position: 0, tricks: 0, percentage: 82.2463768115942, count: 2497}`
+
+        // Clear existing charts and tables
+        d3.select("#charts").selectAll("*").remove();
 
         const margin = {top: 20, right: 40, bottom: 40, left: 20};
         const width = Math.min(window.innerWidth, 800) - margin.left - margin.right;
@@ -244,6 +327,11 @@
         color: #fff;
     }
 
+    .player-button.disabled {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
     button {
         padding: 10px 15px;
         background-color: #007bff;
@@ -260,11 +348,45 @@
         cursor: not-allowed;
     }
 
+    .stop-button {
+        background-color: #dc3545;
+    }
+
+    .stop-button:hover {
+        background-color: #c82333;
+    }
+
     input[type="number"] {
         padding: 8px;
         border: 1px solid #ccc;
         border-radius: 5px;
         width: 100px;
+    }
+
+    .simulation-status {
+        margin: 15px 0;
+        padding: 10px;
+        background-color: #f8f9fa;
+        border-radius: 5px;
+        border: 1px solid #dee2e6;
+    }
+
+    .progress-indicator {
+        height: 4px;
+        background-color: #007bff;
+        width: 100%;
+        position: relative;
+        overflow: hidden;
+        border-radius: 2px;
+    }
+
+    @keyframes progress {
+        0% {
+            transform: translateX(-100%);
+        }
+        100% {
+            transform: translateX(200%);
+        }
     }
 </style>
 
@@ -272,10 +394,6 @@
     <h1>Simulatie <a href="javascript:history.back();">↑</a></h1>
 
     <div class="simulation-controls">
-        <div class="control-group">
-            <label for="seconds">Simulatieduur (secondes):</label>
-            <input type="number" id="seconds" bind:value={seconds} min="1" max="60" />
-        </div>
 
         <div class="control-group">
             <label>Aantal spelers:</label>
@@ -284,7 +402,8 @@
                     {#each [2, 3, 4, 5] as num }
                         <div
                             class="player-button {players === num ? 'active' : ''}"
-                            on:click={() => players = num}
+                            on:click={() => !$simulationRunning && (players = num)}
+                            class:disabled={$simulationRunning}
                         >
                             {num}
                         </div>
@@ -295,16 +414,22 @@
 
         <div class="control-group">
             <label>Troef:</label>
-            <TrumpSelector bind:selectedTrump={trump}/>
+            <TrumpSelector bind:selectedTrump={trump} disabled={$simulationRunning}/>
         </div>
 
         <div class="control-group">
-            <CardSelector bind:selectedCards />
+            <CardSelector bind:selectedCards disabled={$simulationRunning} />
         </div>
 
-        <button on:click={handleSimulate} disabled={$isLoading || selectedCards.length === 0}>
-            {$isLoading ? 'Bezig...' : 'Simuleer'}
-        </button>
+        {#if $simulationRunning}
+            <button id="stop-button" on:click={handleStopSimulation} class="stop-button">
+                Stop Simulatie
+            </button>
+        {:else}
+            <button on:click={handleSimulate} disabled={$isLoading || selectedCards.length === 0}>
+                {$isLoading ? 'Bezig...' : 'Simuleer'}
+            </button>
+        {/if}
     </div>
 
     <div>

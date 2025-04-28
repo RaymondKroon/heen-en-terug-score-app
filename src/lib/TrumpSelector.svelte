@@ -3,6 +3,7 @@
     import Trump from './Trump.svelte';
 
     export let selectedTrump = TRUMPS.NO_TRUMP;
+    export let disabled = false;
 
     const trumpOptions = [
         { value: TRUMPS.SPADES, label: 'schoppen' },
@@ -13,7 +14,9 @@
     ];
 
     function selectTrump(value) {
-        selectedTrump = value;
+        if (!disabled) {
+            selectedTrump = value;
+        }
     }
 </script>
 
@@ -41,6 +44,11 @@
         background-color: #e6f2ff;
     }
 
+    .trump-selector.disabled .trump-option {
+        opacity: 0.6;
+        cursor: not-allowed;
+    }
+
     @media (prefers-color-scheme: dark) {
         .trump-option.selected {
             background-color: #1a3b66;
@@ -54,7 +62,7 @@
     }
 </style>
 
-<div class="trump-selector">
+<div class="trump-selector {disabled ? 'disabled' : ''}">
     {#each trumpOptions as option}
         <div
             class="trump-option {selectedTrump === option.value ? 'selected' : ''}"

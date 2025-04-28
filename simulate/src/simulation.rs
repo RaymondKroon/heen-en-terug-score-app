@@ -1,10 +1,17 @@
 use std::collections::HashMap;
 use std::fmt::Display;
+use std::ops::Deref;
+use std::sync::atomic::{AtomicBool, Ordering};
+use std::sync::{Arc, LazyLock, Mutex};
 use serde::{Serialize};
 use web_time::Instant;
 use crate::card::{create_hand_from_string, Card, Suit};
 use crate::game::Game;
 use wasm_bindgen::prelude::*;
+use js_sys;
+use wasm_bindgen_futures::JsFuture;
+use web_sys::window;
+use wasm_bindgen::closure::Closure;
 
 #[derive(Debug)]
 pub enum SimulateError {
@@ -32,18 +39,73 @@ impl Into<JsValue> for SimulateError {
     }
 }
 
+// Global stop flag for the simulation
+static STOP_SIMULATION: LazyLock<Mutex<AtomicBool>> = LazyLock::new(|| Mutex::new(AtomicBool::new(false)));
+
+#[cfg(target_arch = "wasm32")]
+async fn sleep(ms: i32) -> Result<(), JsValue> {
+    JsFuture::from(js_sys::Promise::new(&mut |resolve, _| {
+        window()
+            .unwrap()
+            .set_timeout_with_callback_and_timeout_and_arguments_0(
+                Closure::once_into_js(move || resolve.call0(&JsValue::NULL).unwrap())
+                    .as_ref()
+                    .unchecked_ref(),
+                ms,
+            )
+            .unwrap();
+    }))
+        .await
+        .map(|_| ())
+}
+
 #[cfg(target_arch = "wasm32")]
 #[wasm_bindgen]
-pub fn simulate(input: String) -> Result<Vec<JsValue>, SimulateError> {
-    simulate_impl(input)?
+pub async fn simulate(input: String, callback: js_sys::Function) -> Result<Vec<JsValue>, SimulateError> {
+    // Store the stop flag in the global variable
+    STOP_SIMULATION.lock().unwrap().store(false, Ordering::SeqCst);
+
+    // Create a callback wrapper that converts Rust Probability to JS
+    let callback_wrapper = move |probabilities: Vec<Probability>| {
+        let js_values: Result<Vec<JsValue>, _> = probabilities
+            .iter()
+            .map(|p| p.to_js_value())
+            .collect();
+
+        if let Ok(values) = js_values {
+            let this = JsValue::null();
+            let js_array = js_sys::Array::from_iter(values.iter());
+            let _ = callback.call1(&this, &js_array);
+        }
+    };
+
+    // Run the simulation with the callback and stop flag
+    let final_result = simulate_impl(input, Some(callback_wrapper), || STOP_SIMULATION.lock().unwrap().load(Ordering::SeqCst)).await?;
+
+    // Convert the final result to JS values
+    final_result
         .iter()
         .map(|p| p.to_js_value())
         .collect()
 }
 
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen]
+pub fn stop_simulation() {
+    STOP_SIMULATION.lock().unwrap().store(true, Ordering::SeqCst);
+}
+
 #[cfg(not(target_arch = "wasm32"))]
-pub fn simulate(input: String) -> Result<Vec<Probability>, SimulateError> {
-    simulate_impl(input)
+pub async fn simulate(input: String) -> Result<Vec<Probability>, SimulateError> {
+    // set stop flag after 2 seconds
+    let flag = Arc::new(AtomicBool::new(false));
+    let mover = Arc::clone(&flag);
+    std::thread::spawn(move || {
+        std::thread::sleep(std::time::Duration::from_secs(2));
+        mover.store(true, Ordering::SeqCst);
+    });
+
+    simulate_impl(input, Some(move |probabilities: Vec<Probability>| {println!("intermediate")}), move || flag.load(Ordering::SeqCst)).await
 }
 
 // parse the input string and simulate the game
@@ -51,56 +113,80 @@ pub fn simulate(input: String) -> Result<Vec<Probability>, SimulateError> {
 // input example: "4p h 2s 4s"
 // where 4p is the number of players, h is the trump suit, 2s 4s are the cards in the hand
 // the trump suit can be x for no trump
-// can also specify the duration of the simulation in seconds with the format "(n)s 4p h 2s 4s"
-fn simulate_impl(input: String) -> Result<Vec<Probability>, SimulateError> {
+// #[cfg(target_arch = "wasm32")]
+async fn simulate_impl<Fc, Fs>(
+    input: String,
+    callback: Option<Fc>,
+    stop: Fs,
+) -> Result<Vec<Probability>, SimulateError>
+where
+    Fc: FnMut(Vec<Probability>),
+    Fs: Fn() -> bool,
+{
     let parts: Vec<&str> = input.split_whitespace().collect();
     if parts.len() < 3 {
         return Err(SimulateError::Error("Invalid input".to_string()));
     }
 
-    let mut duration = std::time::Duration::from_secs(2); // Default duration
-    let mut start_index = 0;
-
-    if parts[0].starts_with('(') && parts[0].ends_with("s)") {
-        if let Ok(d) = parts[0][1..parts[0].len()-2].parse::<u64>() {
-            duration = std::time::Duration::from_secs(d);
-            start_index = 1;
-        }
-    }
-
-    if parts.len() - start_index < 3 {
-        return Err(SimulateError::Error("Invalid input".to_string()));
-    }
-
-    let n_players: usize = parts[start_index].trim_end_matches('p').parse().unwrap_or(0);
-    let trump = match parts[start_index + 1] {
+    let n_players: usize = parts[0].trim_end_matches('p').parse().unwrap_or(0);
+    let trump = match parts[1] {
         "x" => None,
-        _ => Some(parts[start_index + 1].parse::<Suit>().unwrap()),
+        _ => Some(parts[1].parse::<Suit>().unwrap()),
     };
-    let player_cards = create_hand_from_string(&parts[start_index + 2..].join(" "));
+    let player_cards = create_hand_from_string(&parts[2..].join(" "));
 
     let mut rng = rand::thread_rng();
     let mut counts = HashMap::new();
 
     let start_time = Instant::now();
+    let mut last_callback_time = start_time;
+    let callback_interval = std::time::Duration::from_millis(250);
 
     let mut i = 0;
+    let mut callback = callback;
+    let chunk_size = 10000; // Process 5 simulations per chunk
 
-    while Instant::now().duration_since(start_time) < duration {
-        let game = Game::new(i, n_players, trump, &mut rng, player_cards.clone());
-        for pid in 0..n_players {
-            for reshuffle in [true, false].iter() {
-                let mut g = game.clone();
-                g.play_game(pid, *reshuffle);
+    loop {
+        // Check if we should stop
+        if stop() {
+            break;
+        }
 
-                let mut stats = Stat::from_game(&g);
-                for stat in stats.drain(..) {
-                    *counts.entry(stat).or_insert(0) += 1;
+        // Process a chunk of simulations
+        for _ in 0..chunk_size {
+            let game = Game::new(i, n_players, trump, &mut rng, player_cards.clone());
+            for pid in 0..n_players {
+                for reshuffle in [true, false].iter() {
+                    let mut g = game.clone();
+                    g.play_game(pid, *reshuffle);
+
+                    let mut stats = Stat::from_game(&g);
+                    for stat in stats.drain(..) {
+                        *counts.entry(stat).or_insert(0) += 1;
+                    }
+                }
+            }
+            i += 1;
+        }
+
+        // Check if it's time to send an update
+        let now = Instant::now();
+        if now.duration_since(last_callback_time) >= callback_interval {
+            if let Some(ref mut cb) = callback {
+                let probabilities = calculate_probability(&counts, &player_cards, n_players, trump);
+                cb(probabilities);
+                last_callback_time = now;
+            }
+
+            #[cfg(target_arch = "wasm32")]
+            {
+                // Yield to the browser to keep the UI responsive
+                // Use sleep to yield control back to the JavaScript event loop
+                if let Err(e) = sleep(0).await {
+                    return Err(SimulateError::Error(format!("Error yielding to browser: {:?}", e)));
                 }
             }
         }
-
-        i += 1;
     }
 
     Ok(calculate_probability(&counts, &player_cards, n_players, trump))

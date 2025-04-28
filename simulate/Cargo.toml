@@ -20,4 +20,8 @@ serde = { version = "1.0.209", features = ["derive"] }
 serde_json = "1.0.127"
 serde-wasm-bindgen = "0.6.5"
 wasm-bindgen = "0.2.100"
+wasm-bindgen-futures = "0.4.50"
+js-sys = "0.3.77"
+web-sys = { version = "0.3.77", features = ["Window"] }
 web-time = "1.1.0"
+futures = "0.3.31"

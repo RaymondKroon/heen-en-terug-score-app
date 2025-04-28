@@ -215,9 +215,21 @@ export async function deserializeGame(serialized) {
     return game;
 }
 
-export async function simulateGame(input) {
+export async function simulateGame(input, callback) {
     let simulate = await simulate_wasm();
-    return simulate.simulate(input);
+
+    if (callback) {
+        // Use streaming API if callback is provided
+        return await simulate.simulate(input, callback);
+    } else {
+        // Fallback to non-streaming API for backward compatibility
+        return await simulate.simulate(input, () => {});
+    }
+}
+
+export async function stopSimulation() {
+    let simulate = await simulate_wasm();
+    return simulate.stop_simulation();
 }
 
 export function generateRandomClientId() {
