@@ -115,37 +115,82 @@ export function isGameFinished(game) {
     return game.rounds.every(round => round.bids && round.tricks && round.bids.length > 0 && round.tricks.length > 0);
 }
 
-export function calculateGameEarnings(game) {
+function calculatePlayerPositions(game) {
+    // returns a map with player names as keys and position as values (1-based)
+
     let players = [...game.players];
+    players.sort(comparePlayerScore);
+    let result = []
+    let currentScore = players[0].score;
+    let currentPosition = 1;
+    for (let i = 0; i < players.length; i++) {
+         if (currentScore !== players[i].score) {
+             currentScore = players[i].score;
+             currentPosition = i + 1;
+         }
+        result.push({name: players[i].name, position: currentPosition});
+    }
+
+    return {
+        nWinners: result.reduce((acc, val, i) => acc + (val.position === 1), 0),
+        lastPosition: result.reduce((acc, val) => Math.max(acc, val.position), 0),
+        positions: result,
+    }
+}
+
+export function winnerTakesAll({positions, nWinners, lastPosition}) {
     let earningsMap = new Map();
     let totalMoney = 0;
 
-    players.sort(comparePlayerScore);
-    players.reverse();
-    let lowestScore = players[0].score;
-    let highestScore = players[players.length - 1].score;
+    positions.sort((a, b) => b.position - a.position);
 
-    let nWinners = 0;
-
-    for (let i = players.length - 1; i > 0; i--) {
-        if (players[i].score === highestScore) {
-            nWinners++;
-        }
-    }
-
-    players.forEach((player) => {
-        if (lowestScore === player.score) {
-            earningsMap.set(player.name, -3);
+    positions.forEach(({position, name}) => {
+        if (position !== 1 && position === lastPosition ) {
+            earningsMap.set(name, -3);
             totalMoney += 3;
-        } else if (highestScore === player.score) {
-            earningsMap.set(player.name, totalMoney / nWinners);
-        } else {
-            earningsMap.set(player.name, -1.5);
+        } else if (position !== 1) {
+            earningsMap.set(name, -1.5);
             totalMoney += 1.5;
+        } else {
+            earningsMap.set(name, totalMoney / nWinners);
         }
-    });
+    })
 
     return earningsMap;
+}
+
+export function secondPlaceBreaksEven({positions, nWinners, lastPosition}) {
+    let earningsMap = new Map();
+    let totalMoney = 0;
+
+    positions.sort((a, b) => b.position - a.position);
+    positions.forEach(({position, name}) => {
+        if (position !== 1 && position === lastPosition ) {
+            earningsMap.set(name, -3);
+            totalMoney += 3;
+        } else if (position === 2) {
+            earningsMap.set(name, 0);
+        }
+        else if (position !== 1) {
+            earningsMap.set(name, -1.5);
+            totalMoney += 1.5;
+        } else {
+            earningsMap.set(name, totalMoney / nWinners);
+        }
+    })
+
+    return earningsMap;
+}
+
+export function calculateGameEarnings(game, allocationFn) {
+
+    if (allocationFn === undefined) {
+        allocationFn = winnerTakesAll;
+    }
+
+    let playerPositions = calculatePlayerPositions(game);
+
+    return allocationFn(playerPositions);
 }
 
 export function getWinners(game) {

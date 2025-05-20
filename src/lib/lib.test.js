@@ -1,82 +1,64 @@
-// import { expect, test } from 'vitest'
-// import {
-//     intNArrayToInt32,
-//     int32ToIntNArray,
-//     calculateBitsForNumber,
-//     playerBidsToInt64,
-//     int64ToPlayerBids, intNArrayToInt64, int64ToIntNArray
-// } from './lib.js'
-//
-// test('save 5 int4 into in32', () => {
-//     let result = intNArrayToInt32(4, [1,2,2,2,2]);
-//     expect(result.length).toBe(5);
-//     expect(result.wrapper).toBe(0b100010001000100001);
-//
-//     let original = int32ToIntNArray(4, result.wrapper, result.length);
-//     expect(original).toEqual([1,2,2,2,2]);
-// })
-//
-// test('save 5 int3 into in64', () => {
-//     let result = intNArrayToInt64(4, [1,2,0,3,4]);
-//     expect(result.length).toBe(5);
-//
-//     let original = int64ToIntNArray(4, result.wrapper, result.length);
-//     expect(original).toEqual([1,2,0,3,4]);
-// })
-//
-// test('save 3 int4 into int32', () => {
-//     let result = intNArrayToInt32(4, [3, 4, 4]);
-//     expect(result.length).toBe(3);
-//
-//     let original = int32ToIntNArray(4, result.wrapper, result.length);
-//     expect(original).toEqual([3, 4, 4]);
-// })
-//
-// test('save 5 int1 into in32', () => {
-//     let result = intNArrayToInt32(1, [1,1,0,1,0]);
-//     expect(result.length).toBe(5);
-//     expect(result.wrapper).toBe(0b1011);
-//
-//     let original = int32ToIntNArray(1, result.wrapper, result.length);
-//     expect(original).toEqual([1,1,0,1,0]);
-// })
-//
-// test('save 4 int2 into int32', () => {
-//     let result = intNArrayToInt32(2, [1,1,0,1,0]);
-//     expect(result.length).toBe(5);
-//     expect(result.wrapper).toBe(0b1000101);
-//
-//     let original = int32ToIntNArray(2, result.wrapper, result.length);
-//     expect(original).toEqual([1,1,0,1,0]);
-// })
-//
-// test('print bits for rounds', () => {
-//     let nRounds = 0;
-//     let nBits = 0;
-//     [10, 9, 8, 7, 6, 5, 4, 3, 2, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10].forEach(round => {
-//         console.log(`${round} cards: ${calculateBitsForNumber(round)} bits`);
-//         nRounds++;
-//         nBits += calculateBitsForNumber(round);
-//     })
-//     console.log(`Total: ${nRounds} rounds, ${nBits} bits`);
-// })
-//
-// test('player bids to int64', () => {
-//     let bids = [1, 1, 2, 2, 0, 0, 1, 1, 0, 0, 0, 0, 2, 0, 0, 1, 1, 3, 3];
-//     let result = playerBidsToInt64(bids);
-//     let bits = calculateBitsForNumber(result);
-//     expect(bits).toBe(55); // 57 - 2
-//     let original = int64ToPlayerBids(result);
-//     expect(original).toEqual(bids);
-// })
-//
-// test('player bids to int64, incomplete round', () => {
-//     let bids = [1, 1, 2, 2, 0, 0, 1, 1, 0, 0];
-//     let result = playerBidsToInt64(bids);
-//     let bits = calculateBitsForNumber(result);
-//     expect(bits).toBe(25);
-//     let original = int64ToPlayerBids(result);
-//     expect(original.length).toBe(19);
-//     expect(original.slice(0, 10)).toEqual(bids);
-//     expect(original.slice(10)).toEqual([0, 0, 0, 0, 0, 0, 0, 0, 0]);
-// })
+import { expect, test } from 'vitest'
+import {
+    calculateGameEarnings, secondPlaceBreaksEven
+} from './lib.js'
+
+test.each( [
+    ['single winner', [60, 70, 71, 99, 86],  [-3, -1.5, -1.5, 7.5, -1.5]],
+    ['double winner', [60, 70, 71, 99, 99],  [-3, -1.5, -1.5, 3, 3]],
+    ['double last', [70, 70, 71, 99, 86],  [-3, -3, -1.5, 9, -1.5]],
+    ['triple winner', [70, 60, 80, 80, 80],  [-1.5, -3, 1.5, 1.5, 1.5]],
+    ['everyone wins', [80, 80, 80],  [0,0,0]],
+    ['three players, two last', [100, 80, 80],  [6,-3, -3]],
+    ['three players', [90, 100, 80],  [-1.5, 4.5, -3]],
+    ['two players', [70, 100],  [-3, 3]],
+])('winner takes it all (%s): %s -> %s', (desc, scores, expected) => {
+    let game = gameMock(scores);
+    let expectedMap = expected.reduce((acc, val, i) => {
+        let name = `p${i}`;
+        acc.set(name, val);
+        return acc;
+    }, new Map())
+    let result = calculateGameEarnings(game);
+    expect(result).toEqual(expectedMap);
+})
+
+test.each( [
+    ['single winner', [60, 70, 71, 99, 86],  [-3, -1.5, -1.5, 6, 0]],
+    ['double winner, no second', [60, 70, 71, 99, 99],  [-3, -1.5, -1.5, 3, 3]],
+    ['double last', [70, 70, 71, 99, 86],  [-3, -3, -1.5, 7.5, 0]],
+    ['triple winner', [70, 60, 80, 80, 80],  [-1.5, -3, 1.5, 1.5, 1.5]],
+    ['double second', [70, 60, 80, 80, 80],  [-1.5, -3, 1.5, 1.5, 1.5]],
+    ['four players', [77, 88, 61, 91],  [-1.5, 0, -3, 4.5]],
+    ['everyone wins', [80, 80, 80],  [0,0,0]],
+    ['three players', [81, 80, 79],  [3,0,-3]],
+    ['three players, two last', [100, 80, 80],  [6,-3, -3]],
+    ['two players', [70, 100],  [-3, 3]],
+])('second place plays quit (%s): %s -> %s', (desc, scores, expected) => {
+    let game = gameMock(scores);
+    let expectedMap = expected.reduce((acc, val, i) => {
+        let name = `p${i}`;
+        acc.set(name, val);
+        return acc;
+    }, new Map())
+    let result = calculateGameEarnings(game, secondPlaceBreaksEven);
+    expect(result).toEqual(expectedMap);
+})
+
+function gameMock(scores)
+{
+    // scores:  [60, 70, 71, 99, 86]
+    let players = []
+    for (let i = 0; i < scores.length; i++) {
+        players.push({
+            id: i,
+            name: `p${i}`,
+            score: scores[i],
+        })
+    }
+
+    return {
+        players: players,
+        rounds: [],
+    }
+}
