@@ -4,14 +4,6 @@ import simulate_wasm from "../../simulate/Cargo.toml";
 export const GAME_VERSION = 3;
 export const CONFIG_VERSION = 1;
 
-export const announce = [
-    'wss://tracker.btorrent.xyz',
-    'wss://tracker.webtorrent.dev',
-    'wss://tracker.openwebtorrent.com',
-    // 'wss://tracker.files.fm:7073/announce',
-    // 'wss://tracker.btorrent.xyz/',
-]
-
 export function initialGame(id, name) {
     return {
         gameVersion: GAME_VERSION,
@@ -124,10 +116,10 @@ function calculatePlayerPositions(game) {
     let currentScore = players[0].score;
     let currentPosition = 1;
     for (let i = 0; i < players.length; i++) {
-         if (currentScore !== players[i].score) {
-             currentScore = players[i].score;
-             currentPosition = i + 1;
-         }
+        if (currentScore !== players[i].score) {
+            currentScore = players[i].score;
+            currentPosition = i + 1;
+        }
         result.push({name: players[i].name, position: currentPosition});
     }
 
@@ -145,7 +137,7 @@ export function winnerTakesAll({positions, nWinners, lastPosition}) {
     positions.sort((a, b) => b.position - a.position);
 
     positions.forEach(({position, name}) => {
-        if (position !== 1 && position === lastPosition ) {
+        if (position !== 1 && position === lastPosition) {
             earningsMap.set(name, -3);
             totalMoney += 3;
         } else if (position !== 1) {
@@ -165,13 +157,12 @@ export function secondPlaceBreaksEven({positions, nWinners, lastPosition}) {
 
     positions.sort((a, b) => b.position - a.position);
     positions.forEach(({position, name}) => {
-        if (position !== 1 && position === lastPosition ) {
+        if (position !== 1 && position === lastPosition) {
             earningsMap.set(name, -3);
             totalMoney += 3;
         } else if (position === 2) {
             earningsMap.set(name, 0);
-        }
-        else if (position !== 1) {
+        } else if (position !== 1) {
             earningsMap.set(name, -1.5);
             totalMoney += 1.5;
         } else {
@@ -180,6 +171,61 @@ export function secondPlaceBreaksEven({positions, nWinners, lastPosition}) {
     })
 
     return earningsMap;
+}
+
+export function configurableAmounts(amountsConfig) {
+    // Return a closure function that will be used as the allocation function
+    return function({positions, nWinners, lastPosition}) {
+        let earningsMap = new Map();
+        const playerCount = positions.length;
+
+        // Default values if configuration is not provided
+        let amounts = [];
+        if (playerCount >= 2 && playerCount <= 5 &&
+            amountsConfig &&
+            amountsConfig[playerCount] &&
+            amountsConfig[playerCount].length === playerCount) {
+            amounts = amountsConfig[playerCount];
+        } else {
+            // Fallback to default values
+            switch (playerCount) {
+                case 2:
+                    amounts = [1.5, -1.5];
+                    break;
+                case 3:
+                    amounts = [3, 0, -3];
+                    break;
+                case 4:
+                    amounts = [4.5, 0, -1.5, -3];
+                    break;
+                case 5:
+                    amounts = [6, 0, -1.5, -1.5, -3];
+                    break;
+                default:
+                    // For any other player count, everyone gets 0
+                    amounts = Array(playerCount).fill(0);
+            }
+        }
+
+        positions.sort((a, b) => b.position - a.position);
+
+        let totalMoney = 0;
+        positions.forEach(({position, name}) => {
+            if (position !== 1 && position === lastPosition) {
+                let amount = amounts[playerCount - 1];
+                earningsMap.set(name, amount);
+                totalMoney += amount;
+            } else if (position !== 1) {
+                let amount = amounts[position - 1];
+                earningsMap.set(name, amount);
+                totalMoney += amount;
+            } else {
+                earningsMap.set(name, Math.abs(totalMoney) / nWinners);
+            }
+        })
+
+        return earningsMap;
+    };
 }
 
 export function calculateGameEarnings(game, allocationFn) {
@@ -212,7 +258,7 @@ export function getTotals(games) {
     let totals = games.reduce((acc, game) => {
         game.players.forEach(player => {
             if (!acc[player.name]) {
-                acc[player.name] = { name: player.name, score: 0, games: 0 };
+                acc[player.name] = {name: player.name, score: 0, games: 0};
             }
             acc[player.name].score += player.score;
             acc[player.name].games += 1;

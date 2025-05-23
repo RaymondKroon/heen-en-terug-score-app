@@ -1,7 +1,7 @@
 <script>
     import { createEventDispatcher } from 'svelte';
-    import { deleteGame as _deleteGame, listGames } from './store.js';
-    import {calculateGameEarnings, isGameFinished, secondPlaceBreaksEven} from "./lib.js";
+    import {deleteGame as _deleteGame, getConfig, listGames} from './store.js';
+    import {calculateGameEarnings, isGameFinished, configurableAmounts} from "./lib.js";
 
     export let id = -1; // not using, prevent error on browser back button
     export let round = -1; // not using, prevent error on browser back button
@@ -67,9 +67,12 @@
             }
         });
 
+        let config = getConfig()
+        let allocationFn = configurableAmounts(config.configurableAmounts)
+
         selectedGames.reduce((acc, id) => {
             let game = games.find(g => g.id === id);
-            let gameEarnings = calculateGameEarnings(game, secondPlaceBreaksEven);
+            let gameEarnings = calculateGameEarnings(game, allocationFn);
             gameEarnings.forEach((v, k) => {
                 if (!acc.has(k)) {
                     acc.set(k, 0);
