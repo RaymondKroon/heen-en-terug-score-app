@@ -137,12 +137,12 @@
                 const bgColor = getComputedStyle(document.querySelector(':root')).backgroundColor;
                 const blob = await toBlob(tableElement, { backgroundColor: bgColor });
 
+                await navigator.clipboard.writeText(earningsResult)
+
                 if (navigator.canShare) {
                     // Create a combined game ID from selected games
 
                     const data = {
-                        title: 'Nieuwe stand',
-                        url: window.location.href,
                         text: earningsResult,
                         files: [
                             new File([blob], 'standings-table.png', {
