@@ -142,6 +142,7 @@
 
                     const data = {
                         title: 'Nieuwe stand',
+                        url: window.location.href,
                         text: earningsResult,
                         files: [
                             new File([blob], 'standings-table.png', {
