@@ -141,6 +141,7 @@
                     // Create a combined game ID from selected games
 
                     const data = {
+                        title: 'Nieuwe stand',
                         text: earningsResult,
                         files: [
                             new File([blob], 'standings-table.png', {
