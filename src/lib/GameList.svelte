@@ -2,6 +2,7 @@
     import { createEventDispatcher } from 'svelte';
     import {deleteGame as _deleteGame, getConfig, listGames} from './store.js';
     import {calculateGameEarnings, isGameFinished, configurableAmounts} from "./lib.js";
+    import { toBlob } from 'html-to-image';
 
     export let id = -1; // not using, prevent error on browser back button
     export let round = -1; // not using, prevent error on browser back button
@@ -129,6 +130,57 @@
         modal = false;
     }
 
+    async function shareStandings() {
+        const tableElement = document.querySelector('.table-container');
+        if (tableElement) {
+            try {
+                const bgColor = getComputedStyle(document.querySelector(':root')).backgroundColor;
+                const blob = await toBlob(tableElement, { backgroundColor: bgColor });
+
+                if (navigator.canShare) {
+                    // Create a combined game ID from selected games
+
+                    const data = {
+                        text: earningsResult,
+                        files: [
+                            new File([blob], 'standings-table.png', {
+                                type: blob.type,
+                            }),
+                        ]
+                    };
+
+                    if (navigator.canShare(data)) {
+                        try {
+                            await navigator.share(data);
+                        } catch (err) {
+                            if (err.name !== 'AbortError') {
+                                console.error(err.name, err.message);
+                                // Fall back to download if sharing fails
+                                downloadImage(blob);
+                            }
+                        }
+                    } else {
+                        // Fall back to download if sharing not supported
+                        downloadImage(blob);
+                    }
+                } else {
+                    // Fall back to download if Web Share API not supported
+                    downloadImage(blob);
+                }
+            } catch (error) {
+                console.error('Error capturing table as image:', error);
+                alert('Failed to capture table as image. Please try again.');
+            }
+        }
+    }
+
+    function downloadImage(blob) {
+        const link = document.createElement('a');
+        link.download = 'standings-table.png';
+        link.href = URL.createObjectURL(blob);
+        link.click();
+    }
+
 </script>
 
 <style>
@@ -228,6 +280,17 @@
         color: red;
     }
 
+    .button-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+    }
+
+    .button-group button {
+        flex: 1;
+        padding: 8px;
+    }
+
 </style>
 
 <h1>Heen en terug <a href="#/config"><span class="material-icons-outlined">settings</span></a><a href="#/stats"><span class="material-icons-outlined">insights</span></a></h1>
@@ -284,8 +347,20 @@
             {/if}
 
             <textarea rows="5" bind:value={earningsResult} />
-            <button on:click="{_ => navigator.clipboard.writeText(earningsResult)}">Copy</button>
-            <button on:click="{closeModal}">Close</button>
+            <div class="button-group">
+                <button on:click="{_ => navigator.clipboard.writeText(earningsResult)}">
+<!--                    <span class="material-icons-outlined">content_copy</span>-->
+                    Copy
+                </button>
+                <button on:click="{shareStandings}">
+<!--                    <span class="material-icons-outlined">share</span> -->
+                    Share
+                </button>
+                <button on:click="{closeModal}">
+<!--                    <span class="material-icons-outlined">close</span> -->
+                    Close
+                </button>
+            </div>
         </div>
     </div>
 {/if}
