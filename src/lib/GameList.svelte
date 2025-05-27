@@ -1,11 +1,12 @@
 <script type="application/javascript">
     import { createEventDispatcher } from 'svelte';
     import {deleteGame as _deleteGame, getConfig, listGames} from './store.js';
-    import {calculateGameEarnings, isGameFinished, configurableAmounts} from "./lib.js";
+    import {calculateGameEarnings, isGameFinished, configurableAmounts, encodeStandings} from "./lib.js";
     import { toBlob } from 'html-to-image';
 
     export let id = -1; // not using, prevent error on browser back button
     export let round = -1; // not using, prevent error on browser back button
+    export let initialStandings = ''; // standings passed from App.svelte
 
     const dispatch = createEventDispatcher();
 
@@ -51,7 +52,8 @@
     let gameNames = [];
 
     async function openModal() {
-        let txt = await navigator.clipboard.readText();
+        let txt = initialStandings ? initialStandings : await navigator.clipboard.readText();
+
         if (txt) {
             oldStandings = txt;
         }
@@ -160,19 +162,23 @@
                 modalContent.style.width = originalModalWidth;
                 modalContent.style.maxWidth = originalModalMaxWidth;
 
-                await navigator.clipboard.writeText(earningsResult)
+                const encodedStandings = encodeStandings(earningsResult);
+                const shareUrl = `${window.location.origin}${window.location.pathname}#/st/${encodedStandings}`;
 
                 if (navigator.canShare) {
                     // Create a combined game ID from selected games
-
                     const data = {
+                        title: 'Heen en terug stand',
                         text: earningsResult,
+                        url: shareUrl,
                         files: [
-                            new File([blob], 'standings-table.png', {
+                            new File([blob], 'stand.png', {
                                 type: blob.type,
                             }),
                         ]
                     };
+
+                    console.log(shareUrl);
 
                     if (navigator.canShare(data)) {
                         try {
@@ -384,16 +390,10 @@
 
             <textarea rows="5" bind:value={earningsResult} />
             <div class="button-group">
-                <button on:click="{_ => navigator.clipboard.writeText(earningsResult)}">
-<!--                    <span class="material-icons-outlined">content_copy</span>-->
-                    Copy
-                </button>
                 <button on:click="{shareStandings}">
-<!--                    <span class="material-icons-outlined">share</span> -->
                     Share
                 </button>
                 <button on:click="{closeModal}">
-<!--                    <span class="material-icons-outlined">close</span> -->
                     Close
                 </button>
             </div>

@@ -332,3 +332,55 @@ export function generateRandomClientId() {
     }
     return result;
 }
+
+// Encode standings data into a human-readable format for URL sharing
+export function encodeStandings(standingsData) {
+    // standingsData is expected to be a string in the format:
+    // "Name1 score1\nName2 score2\n..."
+
+    // Parse the standings data into an array of player objects
+    const players = standingsData.split('\n')
+        .filter(line => line.trim())
+        .map(line => {
+            // Find the last space in the line to separate name and score
+            // This handles player names that contain spaces
+            const lastSpaceIndex = line.lastIndexOf(' ');
+            if (lastSpaceIndex === -1) return null;
+
+            const name = line.substring(0, lastSpaceIndex);
+            const score = line.substring(lastSpaceIndex + 1);
+            return { name, score };
+        })
+        .filter(player => player !== null);
+
+    // Create a human-readable format: name1:score1,name2:score2,...
+    const humanReadable = players
+        .map(player => `${encodeURIComponent(player.name)}:${player.score}`)
+        .join(',');
+
+    return humanReadable;
+}
+
+// Decode a human-readable string back into standings data
+export function decodeStandings(encodedStandings) {
+    try {
+        // Parse the human-readable format: name1:score1,name2:score2,...
+        const players = encodedStandings.split(',')
+            .filter(part => part.includes(':'))
+            .map(part => {
+                const [encodedName, score] = part.split(':');
+                return {
+                    name: decodeURIComponent(encodedName),
+                    score
+                };
+            });
+
+        // Convert back to the original format: "Name1 score1\nName2 score2\n..."
+        return players
+            .map(player => `${player.name} ${player.score}`)
+            .join('\n');
+    } catch (error) {
+        console.error('Error decoding standings:', error);
+        return '';
+    }
+}

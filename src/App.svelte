@@ -14,6 +14,7 @@
     import Simulate from "./lib/Simulate.svelte";
     import ConfigPage from "./lib/ConfigPage.svelte";
     import {getActiveConfig} from "./lib/store.js";
+    import {decodeStandings} from "./lib/lib.js";
 
     async function handleMessage(event) {
         if (event.detail.type === 'play') {
@@ -94,6 +95,17 @@
             props = {players, trump};
         } else if (path.startsWith('/config')) {
             page = ConfigPage;
+        } else if (path.startsWith('/st/')) {
+            const encodedStandings = path.substring(4); // Remove '/st/'
+            let initialStandings = '';
+            if (encodedStandings) {
+                try {
+                    initialStandings = decodeStandings(encodedStandings);
+                } catch (error) {
+                }
+            }
+            page = GameList;
+            props = { initialStandings };
         } else {
             window.location.href = '#/list';
         }
