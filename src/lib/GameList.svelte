@@ -1,4 +1,4 @@
-<script>
+<script type="application/javascript">
     import { createEventDispatcher } from 'svelte';
     import {deleteGame as _deleteGame, getConfig, listGames} from './store.js';
     import {calculateGameEarnings, isGameFinished, configurableAmounts} from "./lib.js";
@@ -132,10 +132,33 @@
 
     async function shareStandings() {
         const tableElement = document.querySelector('.table-container');
-        if (tableElement) {
+        const modalContent = document.querySelector('.modal-content');
+        if (tableElement && modalContent) {
             try {
+                // Save original styles
+                const originalOverflow = tableElement.style.overflow;
+                const originalWidth = tableElement.style.width;
+                const originalModalWidth = modalContent.style.width;
+                const originalModalMaxWidth = modalContent.style.maxWidth;
+
+                // Apply styles for image capture to ensure full table visibility
+                tableElement.style.overflow = 'visible';
+                tableElement.style.width = 'fit-content';
+                // Make sure the parent container also grows to fit the table
+                modalContent.style.width = 'fit-content';
+                modalContent.style.maxWidth = 'none';
+
                 const bgColor = getComputedStyle(document.querySelector(':root')).backgroundColor;
-                const blob = await toBlob(tableElement, { backgroundColor: bgColor });
+                const blob = await toBlob(tableElement, {
+                    backgroundColor: bgColor,
+                    width: tableElement.scrollWidth,
+                });
+
+                // Restore original styles
+                tableElement.style.overflow = originalOverflow;
+                tableElement.style.width = originalWidth;
+                modalContent.style.width = originalModalWidth;
+                modalContent.style.maxWidth = originalModalMaxWidth;
 
                 await navigator.clipboard.writeText(earningsResult)
 
@@ -251,23 +274,34 @@
         margin: 15px 0;
         overflow-x: auto;
         max-width: 100%;
+        width: fit-content;
+        min-width: 100%;
     }
 
     table {
         width: 100%;
         border-collapse: collapse;
         margin-bottom: 15px;
+        table-layout: auto;
     }
 
     th, td {
-        padding: 8px;
-        text-align: left;
+        padding: 4px;
         border-bottom: 1px solid var(--border-color);
         white-space: nowrap;
     }
 
+    td {
+        text-align: right;
+    }
+
+    th {
+        text-align: center;
+    }
+
     td:first-child {
         font-weight: bold;
+        text-align: left;
     }
 
     th:nth-child(3), th:last-child, td:nth-child(3), td:last-child {
