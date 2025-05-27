@@ -353,10 +353,14 @@ export function encodeStandings(standingsData) {
         })
         .filter(player => player !== null);
 
-    // Create a human-readable format: name1:score1,name2:score2,...
+    // Create a human-readable format: name1:score1+name2:score2+...
     const humanReadable = players
-        .map(player => `${encodeURIComponent(player.name)}:${player.score}`)
-        .join(',');
+        .map(player => {
+            // Replace dots with underscores in the score
+            const scoreWithUnderscores = player.score.replace(/\./g, '_');
+            return `${encodeURIComponent(player.name)}:${scoreWithUnderscores}`;
+        })
+        .join('+');
 
     return humanReadable;
 }
@@ -364,14 +368,16 @@ export function encodeStandings(standingsData) {
 // Decode a human-readable string back into standings data
 export function decodeStandings(encodedStandings) {
     try {
-        // Parse the human-readable format: name1:score1,name2:score2,...
-        const players = encodedStandings.split(',')
+        // Parse the human-readable format: name1:score1+name2:score2+...
+        const players = encodedStandings.split('+')
             .filter(part => part.includes(':'))
             .map(part => {
                 const [encodedName, score] = part.split(':');
+                // Replace underscores with dots in the score
+                const scoreWithDots = score.replace(/_/g, '.');
                 return {
                     name: decodeURIComponent(encodedName),
-                    score
+                    score: scoreWithDots
                 };
             });
 

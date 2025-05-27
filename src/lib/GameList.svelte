@@ -178,8 +178,6 @@
                         ]
                     };
 
-                    console.log(shareUrl);
-
                     if (navigator.canShare(data)) {
                         try {
                             await navigator.share(data);
@@ -391,10 +389,10 @@
             <textarea rows="5" bind:value={earningsResult} />
             <div class="button-group">
                 <button on:click="{shareStandings}">
-                    Share
+                    Delen
                 </button>
                 <button on:click="{closeModal}">
-                    Close
+                    Sluiten
                 </button>
             </div>
         </div>
