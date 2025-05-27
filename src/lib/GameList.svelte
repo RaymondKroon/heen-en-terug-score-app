@@ -108,11 +108,11 @@
             selectedGames.forEach((gameId, index) => {
 
                 let gameEarnings = gameEarningsMap.get(gameId);
-                let earnings = gameEarnings && gameEarnings.has(playerName) ? gameEarnings.get(playerName) : 0;
+                // If player is not in the game, set earnings to undefined instead of 0
+                let earnings = gameEarnings && gameEarnings.has(playerName) ? gameEarnings.get(playerName) : undefined;
                 row[`game${index}`] = earnings;
 
-                // Update running total
-                playerTotal += earnings;
+                playerTotal += earnings !== undefined ? earnings : 0;
             });
 
             // Set the final total
@@ -372,7 +372,7 @@
                                     <td>{row.player}</td>
                                     <td class={row.startValue > 0 ? 'positive' : row.startValue < 0 ? 'negative' : ''}>{row.startValue.toFixed(2)}</td>
                                     {#each selectedGames as _, i}
-                                        <td class={row[`game${i}`] > 0 ? 'positive' : row[`game${i}`] < 0 ? 'negative' : ''}>{row[`game${i}`] !== undefined ? row[`game${i}`].toFixed(2) : '0.00'}</td>
+                                        <td class={row[`game${i}`] > 0 ? 'positive' : row[`game${i}`] < 0 ? 'negative' : ''}>{row[`game${i}`] !== undefined ? row[`game${i}`].toFixed(2) : ''}</td>
                                     {/each}
                                     <td class={row.total > 0 ? 'positive' : row.total < 0 ? 'negative' : ''}>{row.total.toFixed(2)}</td>
                                 </tr>
