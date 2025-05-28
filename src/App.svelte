@@ -96,7 +96,7 @@
         } else if (path.startsWith('/config')) {
             page = ConfigPage;
         } else if (path.startsWith('/st/')) {
-            const encodedStandings = path.substring(4); // Remove '/st/'
+            const encodedStandings = path.substring(4);
             let initialStandings = '';
             if (encodedStandings) {
                 try {
