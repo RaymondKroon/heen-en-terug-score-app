@@ -41,6 +41,7 @@
     .name {
         flex: 1;
         padding-right: 5px;
+        font-size: var(--player-name-font-size);
     }
 
     :global(span.role) {
