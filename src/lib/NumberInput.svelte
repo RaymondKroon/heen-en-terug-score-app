@@ -109,7 +109,7 @@
         overflow-x: auto;
         border-radius: 5px;
         border: 1px solid #ccc;
-        width: calc(var(--button-width) * min(5, var(--total-buttons)));
+        width: calc(var(--button-width) * min(var(--visible-items), var(--total-buttons)));
         scrollbar-width: none; /* Hide scrollbar for Firefox */
         -ms-overflow-style: none; /* Hide scrollbar for IE and Edge */
         scroll-snap-type: x mandatory;
@@ -167,7 +167,7 @@
     }
 </style>
 
-<div class="slider-container" style="--total-buttons: {values.length}; --button-width: {BUTTON_WIDTH}px" bind:this={sliderContainer}>
+<div class="slider-container" style="--total-buttons: {values.length}; --button-width: {BUTTON_WIDTH}px; --visible-items: {VISIBLE_ITEMS}" bind:this={sliderContainer}>
     <div class="slider-track">
         {#each values as i}
             <div
@@ -179,3 +179,7 @@
         {/each}
     </div>
 </div>
+
+{#if values.length < VISIBLE_ITEMS}
+    <div style="width: {(VISIBLE_ITEMS - values.length) * BUTTON_WIDTH}px; height: 40px;"></div>
+{/if}
