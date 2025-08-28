@@ -358,7 +358,6 @@
         height: 56px;
         border-radius: 50%;
         background-color: var(--accent-color);
-        color: white;
         border: none;
         cursor: pointer;
         box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
