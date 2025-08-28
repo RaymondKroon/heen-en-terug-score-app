@@ -196,7 +196,7 @@
 
 <div class="game">
     <div id="standings">
-        <h1>Stand <a href="#/list">↑</a>
+        <h1>Spel {game.gameNumber} <a href="#/list">↑</a>
             <a href="#" on:click|preventDefault={exportStandings}><span class="material-icons-outlined">share</span></a>
             {#if gameFinished}<a href="#/splash/{id}"><span class="material-icons-outlined">celebration</span></a>{/if}
             <a href="#/simulate/{players.length}/{simulateRound.trump}"><span class="material-icons-outlined">casino</span></a>

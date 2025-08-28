@@ -12,6 +12,9 @@ import {
 
 const localStorageKey = 'heen-en-weer-store';
 
+// Game numbering cache
+let gameNumberCache = new Map();
+
 const initialPlayer = {
     id: 0,
     name: 'empty',
@@ -60,11 +63,34 @@ gameStore.subscribe(store => {
     localStorage.setItem(localStorageKey, JSON.stringify(store));
 });
 
+// Helper function to assign game numbers and manage cache
+function assignGameNumbers(games) {
+    // Clear cache and rebuild
+    gameNumberCache.clear();
+
+    return games.map((game, index) => {
+        const gameNumber = index + 1;
+        gameNumberCache.set(game.id, gameNumber);
+        return { ...game, gameNumber };
+    });
+}
+
+// Helper function to get a single game's number
+function getGameNumber(gameId, games) {
+    if (!gameNumberCache.has(gameId)) {
+        // Rebuild cache if not found
+        assignGameNumbers(games);
+    }
+    return gameNumberCache.get(gameId);
+}
+
 // Add a new game to the store
 export function addGame(id, name) {
     gameStore.update(store => {
         const game = initialGame(id, name);
         store.games = [...store.games, game];
+        // Clear cache since games array changed
+        gameNumberCache.clear();
         return store;
     });
 }
@@ -72,13 +98,15 @@ export function addGame(id, name) {
 export function deleteGame(id) {
     gameStore.update(store => {
         store.games = store.games.filter(game => game.id !== id);
+        // Clear cache since games array changed
+        gameNumberCache.clear();
         return store;
     });
 }
 
 export function listGames() {
     const store = get(gameStore);
-    return store.games;
+    return assignGameNumbers(store.games);
 }
 
 export function gameExists(gameId) {
@@ -100,8 +128,11 @@ export function getGame(gameId) {
         game.gameVersion = GAME_VERSION;
         saveGame(gameId, game);
     }
-    //clone the game object to prevent mutation
-    return JSON.parse(JSON.stringify(game));
+
+    let clonedGame = JSON.parse(JSON.stringify(game));
+    clonedGame.gameNumber = getGameNumber(gameId, store.games);
+
+    return clonedGame;
 }
 
 export function saveGame(id, game) {
@@ -127,6 +158,8 @@ export function importGame(game) {
     game.id = id;
     gameStore.update(store => {
         store.games = [...store.games, game];
+        // Clear cache since games array changed
+        gameNumberCache.clear();
         return store;
     });
 
@@ -359,6 +392,8 @@ export async function importAllGames(file) {
     }));
     gameStore.update(store => {
         store.games = [...store.games, ...games];
+        // Clear cache since games array changed
+        gameNumberCache.clear();
         return store;
     });
 }

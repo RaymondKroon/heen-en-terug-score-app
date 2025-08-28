@@ -216,6 +216,7 @@
 
     .list {
         margin-bottom: 16px;
+        padding-bottom: 50px;
     }
 
     .list-item {
@@ -236,6 +237,24 @@
 
     .list-item-text {
         flex-grow: 1;
+        cursor: pointer;
+    }
+
+    .game-title {
+        /*font-weight: bold;*/
+        /*font-size: 1.1em;*/
+    }
+
+    .game-name {
+        font-size: 0.8em;
+        color: var(--text-color-secondary, #666);
+        font-weight: normal;
+    }
+
+    .game-players {
+        font-size: 0.8em;
+        color: var(--text-color-secondary, #666);
+        margin-top: 2px;
     }
 
     .delete-icon {
@@ -331,14 +350,65 @@
         padding: 8px;
     }
 
+    .fab {
+        position: fixed;
+        bottom: 20px;
+        right: 20px;
+        width: 56px;
+        height: 56px;
+        border-radius: 50%;
+        background-color: var(--accent-color);
+        color: white;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        z-index: 1000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .fab .material-icons-outlined {
+        font-size: 24px;
+    }
+
+    .fab-add {
+        right: 20px;
+    }
+
+    .fab-calculate {
+        right: 90px;
+    }
+
+    .fab:hover:not(:disabled) {
+        transform: scale(1.1);
+        box-shadow: 0 6px 16px rgba(0, 0, 0, 0.4);
+    }
+
+    .fab:active:not(:disabled) {
+        transform: scale(0.95);
+    }
+
+    .fab:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
+    }
+
+
 </style>
 
 <h1>Heen en terug <a href="#/config"><span class="material-icons-outlined">settings</span></a><a href="#/stats"><span class="material-icons-outlined">insights</span></a></h1>
 
 <div class="list">
-    {#each games as game (game.id)}
+    {#each games.toReversed() as game (game.id)}
         <div class="list-item" class:selected={selectedGames.includes(game.id)}>
-            <span class="list-item-text" on:click="{_ => playGame(game.id)}">{game.name}</span>
+            <div class="list-item-text" on:click="{_ => playGame(game.id)}">
+                <div class="game-title">Spel {game.gameNumber} <span class="game-name">{game.name}</span></div>
+                <div class="game-players">{game.players.map(p => p.name).join(', ')}</div>
+            </div>
             <span class="play-icon" on:click="{_ => playGame(game.id)}">▶</span>
             {#if isGameFinished(game)}<span class="medal-icon" on:click="{_ => selectGame(game.id)}">🏅</span>{/if}
             <span class="delete-icon" on:click="{_ => deleteGame(game.id)}">❌</span>
@@ -346,10 +416,16 @@
     {/each}
 </div>
 
-<div class="new-item">
-    <button on:click="{addItem}">Nieuw</button>
-    {#if selectedGames.length > 0}<button on:click="{openModal}">Berekend stand</button>{/if}
-</div>
+<!-- Floating Action Buttons -->
+{#if selectedGames.length > 0}
+<button class="fab fab-calculate" on:click="{openModal}" title="Berekend stand" disabled={modal}>
+    <span class="material-icons-outlined">calculate</span>
+</button>
+{/if}
+
+<button class="fab fab-add" on:click="{addItem}" title="Nieuw spel toevoegen" disabled={modal}>
+    <span class="material-icons-outlined">add</span>
+</button>
 
 {#if modal}
     <div class="modal">
