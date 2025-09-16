@@ -191,15 +191,26 @@
 
     }
 
+    #standings h1 {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
 </style>
 
 
 <div class="game">
     <div id="standings">
-        <h1>Spel {game.gameNumber} <a href="#/list">↑</a>
-            <a href="#" on:click|preventDefault={exportStandings}><span class="material-icons-outlined">share</span></a>
-            {#if gameFinished}<a href="#/splash/{id}"><span class="material-icons-outlined">celebration</span></a>{/if}
-            <a href="#/simulate/{players.length}/{simulateRound.trump}"><span class="material-icons-outlined">casino</span></a>
+        <h1>
+            <span class="title-left">
+                Spel {game.gameNumber} <a href="#/list">↑</a>
+                <a href="#" on:click|preventDefault={exportStandings}><span class="material-icons-outlined">share</span></a>
+                {#if gameFinished}<a href="#/splash/{id}"><span class="material-icons-outlined">celebration</span></a>{/if}
+                <a href="#/simulate/{players.length}/{simulateRound.trump}"><span class="material-icons-outlined">casino</span></a>
+            </span>
+            <span class="title-right">
+                <a href="#/game-edit/{id}" title="Wijzigen"><span class="material-icons-outlined">edit</span></a>
+            </span>
         </h1>
         <Leaderboard bind:this={leaderboard} zoom={true} showPointsFromLastRound={true && currentRoundId > 0} entries={getStandings(id)}/>
     </div>

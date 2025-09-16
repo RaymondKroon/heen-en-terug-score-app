@@ -196,6 +196,24 @@ export function listPlayers(gameId) {
     return [];
 }
 
+export function updatePlayerNames(gameId, names) {
+    gameStore.update(store => {
+        const gameIndex = store.games.findIndex(game => game.id === gameId);
+        if (gameIndex !== -1) {
+            const players = store.games[gameIndex].players;
+            for (let i = 0; i < players.length && i < names.length; i++) {
+                const newName = (names[i] ?? '').toString().trim();
+                if (newName !== '') {
+                    players[i].name = newName;
+                }
+            }
+            // ensure store reference updated
+            store.games[gameIndex].players = [...players];
+        }
+        return store;
+    });
+}
+
 // Add a round to a specific game
 export function addRound(id, nCards, trump, dealerId) {
     gameStore.update(store => {

@@ -13,6 +13,7 @@
     import Countdown from "./lib/Countdown.svelte";
     import Simulate from "./lib/Simulate.svelte";
     import ConfigPage from "./lib/ConfigPage.svelte";
+    import GameEdit from "./lib/GameEdit.svelte";
     import {getActiveConfig} from "./lib/store.js";
     import {decodeStandings} from "./lib/lib.js";
 
@@ -37,7 +38,12 @@
             return;
         }
 
-        if (path.startsWith('/game')) {
+        if (path.startsWith('/game-edit')) {
+            let gameId = path.slice(11);
+            let id = parseInt(gameId);
+            page = GameEdit;
+            props = {id};
+        } else if (path.startsWith('/game')) {
             let id = path.slice(6);
             id = parseInt(id, 10);
             page = Game;
