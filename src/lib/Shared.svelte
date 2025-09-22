@@ -11,9 +11,16 @@
     let game;
     let players = [];
 
+    let installedApp = false;
+
     onMount(async () => {
         game = await loadGame(data);
         players = game.players;
+
+        if (navigator.getInstalledRelatedApps !== undefined) {
+            let installedApps =  await navigator.getInstalledRelatedApps();
+            installedApp = installedApps.length > 0;
+        }
     });
 
     function importGame() {
@@ -71,8 +78,14 @@
     .cross-icon {
         color: red;
     }
-</style>
 
+    .button-row {
+        display: flex;
+        gap: 12px;
+        margin-top: 12px;
+        align-items: center;
+    }
+</style>
 {#if game}
 <div class="game">
     <h1>Stand {game.name}</h1>
@@ -125,6 +138,12 @@
         </tbody>
     </table>
 
-    <button on:click={importGame}>importeren</button>
+    <div class="button-row">
+        <button on:click={importGame}>importeren</button>
+        {#if installedApp}
+            <button on:click={window.location=`heen-en-terug://share/1/${data}`}>open in app</button>
+        {/if}
+    </div>
+
 </div>
 {/if}

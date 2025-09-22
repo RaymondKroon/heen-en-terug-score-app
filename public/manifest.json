@@ -45,5 +45,9 @@
       ]
     }
   ],
-  "description": "De heen en terug score app"
+  "description": "De heen en terug score app",
+  "related_applications": [{
+    "platform": "play",
+    "id": "nl.k3n.raymond.heen_en_terug"
+  }]
 }
